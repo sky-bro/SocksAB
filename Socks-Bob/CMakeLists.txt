@@ -9,4 +9,4 @@ target_include_directories(Socks-Bob PUBLIC
                           )
 
 install(TARGETS Socks-Bob RUNTIME DESTINATION bin)
-
+install(FILES Socks-Bob.desktop DESTINATION share/applications)

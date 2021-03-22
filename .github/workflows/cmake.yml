@@ -198,10 +198,11 @@ jobs:
           cd ..
           cp AppDir AppDir2 -r
           rm AppDir/usr/bin/Socks-Bob
+          rm AppDir/usr/share/applications/Socks-Bob.desktop
           rm AppDir2/usr/bin/Socks-Alice
           rm AppDir2/usr/share/applications/Socks-Alice.desktop
           squashfs-root/AppRun AppDir/usr/share/applications/Socks-Alice.desktop -appimage -no-strip -always-overwrite
-          squashfs-root/AppRun AppDir2/usr/bin/Socks-Bob.desktop -appimage -no-strip -always-overwrite
+          squashfs-root/AppRun AppDir2/usr/share/applications/Socks-Bob.desktop -appimage -no-strip -always-overwrite
           # ls * -R
           mv ./Socks-Alice*.AppImage ./Socks-Alice.AppImage
           mv ./Socks-Bob*.AppImage ./Socks-Bob.AppImage

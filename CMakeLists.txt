@@ -11,8 +11,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Network Widgets LinguistTools REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Network Widgets LinguistTools REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Network Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Network Widgets REQUIRED)
 
 find_package(PkgConfig)
 pkg_search_module(BOTAN REQUIRED botan-2>=2.3.0)

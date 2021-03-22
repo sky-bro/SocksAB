@@ -1,10 +1,10 @@
 [Desktop Entry]
 Version=1.0
-Name=Socks-Alice
+Name=Socks-Bob
 Type=Application
-Comment=Client side of SocksAB, a simple proxy app
+Comment=Server side of SocksAB, a simple proxy app
 Keywords=Internet;VPN;Proxy;Qt;
 Categories=Network;Qt;
-Terminal=false
+Terminal=true
 Icon=SocksAB
-Exec=Socks-Alice
+Exec=Socks-Bob

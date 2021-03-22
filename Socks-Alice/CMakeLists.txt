@@ -24,4 +24,4 @@ target_include_directories(Socks-Alice
 
 install(TARGETS Socks-Alice RUNTIME DESTINATION bin)
 install(FILES Socks-Alice.desktop DESTINATION share/applications)
-install(FILES heart.png DESTINATION share/icons RENAME Socks-Alice.png)
+install(FILES heart.png DESTINATION share/icons RENAME SocksAB.png)
