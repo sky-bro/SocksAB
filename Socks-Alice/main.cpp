@@ -1,8 +1,14 @@
-#include <iostream>
+#include "dialog.h"
+#include "logindialog.h"
 
-using namespace std;
+#include <QApplication>
 
-int main(int argc, char const *argv[]) {
-  cout << "hello sky!\n";
-  return 0;
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    LoginDialog login_dialog;
+    login_dialog.show();
+//    Dialog w;
+//    w.show();
+    return a.exec();
 }
