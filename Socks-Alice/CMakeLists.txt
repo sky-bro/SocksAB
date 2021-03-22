@@ -23,3 +23,4 @@ target_include_directories(Socks-Alice
     )
 
 install(TARGETS Socks-Alice RUNTIME DESTINATION bin)
+install(FILES Socks-Alice.desktop DESTINATION share/applications)
