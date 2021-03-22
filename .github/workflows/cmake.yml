@@ -74,7 +74,7 @@ jobs:
           path: botan-2.17.3/
           key: BotanCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
       - name: Linux - Compile Botan
-        if: matrix.platform == 'ubuntu-16.04'
+        if: matrix.platform == 'ubuntu-16.04' && steps.cache-botan.outputs.cache-hit != 'true'
         run: |
           wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
           tar -xvf 2.17.3.tar.gz
@@ -88,7 +88,7 @@ jobs:
           # sudo add-apt-repository ppa:webispy/grpc
           # sudo add-apt-repository ppa:carsten-uppenbrink-net/openssl
           sudo apt update
-          # sudo apt install -y libgl-dev libx11-dev libxkbcommon-x11-dev libxcb-image0-dev libxcb-icccm4-dev libssl-dev libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0
+          sudo apt install -y libgl-dev libx11-dev libxkbcommon-x11-dev libxcb-image0-dev libxcb-icccm4-dev libssl-dev libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0
           # sudo apt install -y libprotobuf-dev protobuf-compiler protobuf-c-compiler libgrpc++-dev protobuf-compiler-grpc ninja-build fcitx-frontend-qt5
           sudo apt install ninja-build
           # install botan2
@@ -196,8 +196,8 @@ jobs:
           # cp -fv /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/libfcitxplatforminputcontextplugin.so ./usr/plugins/platforminputcontexts/
           cd ..
           cp AppDir AppDir2 -r
-          rm AppDir/Socks-Bob
-          rm AppDir2/Socks-Alice
+          rm AppDir/usr/bin/Socks-Bob
+          rm AppDir2/usr/bin/Socks-Alice
           squashfs-root/AppRun AppDir/usr/share/applications/Socks-Alice.desktop -appimage -no-strip -always-overwrite
           ls * -R
           # mv ./Qv2ray*.AppImage ./Qv2ray.AppImage
