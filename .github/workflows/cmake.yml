@@ -54,7 +54,7 @@ jobs:
           arch: ${{ matrix.arch }}
       - name: Cache Qt
         id: cache-qt
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ../Qt
           key: QtCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
@@ -69,7 +69,7 @@ jobs:
       - name: Linux - Cache Botan
         if: matrix.platform == 'ubuntu-16.04'
         id: cache-botan
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: botan-2.17.3/
           key: BotanCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
