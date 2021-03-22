@@ -218,9 +218,20 @@ jobs:
         # if: github.event_name == 'release' && matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/Socks-*.AppImage
+          file: build/Socks-Alice.AppImage
           # asset_name: Qv2ray.${{ steps.get_version.outputs.VERSION }}.linux-${{ matrix.arch }}.AppImage
-          # asset_name: Socks-Alice.linux-${{ matrix.arch }}.AppImage
+          asset_name: Socks-Alice.linux-${{ matrix.arch }}.AppImage
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Linux - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
+        # if: github.event_name == 'release' && matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/Socks-Bob.AppImage
+          # asset_name: Qv2ray.${{ steps.get_version.outputs.VERSION }}.linux-${{ matrix.arch }}.AppImage
+          asset_name: Socks-Bob.linux-${{ matrix.arch }}.AppImage
           tag: ${{ github.ref }}
           overwrite: true
       # --------------------------------------------------------
