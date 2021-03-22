@@ -1,5 +1,15 @@
 # SocksAB
 
+## 编译与安装
+
+TODO
+
+* 直接从releases中下载对应系统的解压运行即可
+
+### 依赖
+
+* botan-2>=2.3.0
+
 ## 配置文件说明
 
 Socks-Alice默认读取和它同路径的配置文件
@@ -24,8 +34,24 @@ Socks-Alice默认读取和它同路径的配置文件
 ## THINKG / TODO
 
 * Socks-Bob无GUI，需要命令行参数解析
-  * `./Socks-Bob --host 0.0.0.0 --port 1082` 这同时也是默认使用的ip和端口
-  * `./Socks-Bob -h 0.0.0.0 -p 1082`
-  * `nohup ./Socks-Bob > /dev/null 2>&1 &`
+  * `--help` `-h` 查看帮助
+  * `--key` `-k` Alice和Bob间的secret
+  * `--ip` `-i` server绑定的ip地址 默认0.0.0.0
+  * `--port` `-p` 绑定的端口 默认1082
+  * [ ] `--method` `-m` 加密(通信)方式
+  * `./Socks-Bob --ip 0.0.0.0 --port 1082 --key sky-io`
+  * `nohup ./Socks-Bob -k sky-io > /dev/null 2>&1 &`
+  * [ ] `--config` `-c` 也可读配置文件？
 * Socks-Alice有GUI，并且使用配置文件
   * [ ] 其它配置文件路径? 如`/home/username/.config/SocksAB/config.txt`, `/etc/SocksAB/config.txt`
+  * 使用ini文件
+    * 本地监听的ip地址
+    * Socks5代理 -- bool, 端口 -- ushort
+    * HTTP代理 -- bool, 端口 -- ushort
+    * 链路列表
+      * 备注/名字, 入口ip:port, 代理出口ip:port, 密码, 加密方式method, 超时
+      * 延迟/是否畅通, 当前是否连接此链路
+* 添加Actions自动编译并发布
+  * [ ] linux
+  * [ ] windows
+  * [ ] mac
