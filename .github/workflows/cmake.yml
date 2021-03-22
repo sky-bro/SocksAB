@@ -66,6 +66,22 @@ jobs:
           mirror: "http://mirrors.ocf.berkeley.edu/qt/"
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       # =========================================================================================================
+      - name: Linux - Cache Botan
+        if: matrix.platform == 'ubuntu-16.04'
+        id: cache-botan
+        uses: actions/cache@v1
+        with:
+          path: botan-2.17.3/
+          key: BotanCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
+      - name: Linux - Compile Botan
+        if: matrix.platform == 'ubuntu-16.04'
+        run: |
+          wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
+          tar -xvf 2.17.3.tar.gz
+          cd botan-2.17.3/
+          ./configure.py --prefix=/usr
+          make -j`nproc`
+
       - name: Linux - ${{ matrix.qt_version }} - Build preparation - Install Packages
         if: matrix.platform == 'ubuntu-16.04'
         run: |
@@ -76,12 +92,19 @@ jobs:
           # sudo apt install -y libprotobuf-dev protobuf-compiler protobuf-c-compiler libgrpc++-dev protobuf-compiler-grpc ninja-build fcitx-frontend-qt5
           sudo apt install ninja-build
           # install botan2
-          wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
-          tar -xvf 2.17.3.tar.gz
           cd botan-2.17.3/
-          ./configure.py --prefix=/usr
-          make -j`nproc`
           sudo make install
+      
+      # - name: macOS - Compile Botan
+      #   if: matrix.platform == 'macos-latest'
+      #   run: |
+      #     # 123
+      # - name: Win - Compile Botan
+      #   if: matrix.platform == 'windows-latest'
+      #   run: |
+      #     python configure.py --cc=msvc --os=windows
+      #     nmake
+      #     nmake check
       # --------------------------------------------------------
       # - name: macOS - ${{ matrix.qt_version }} - Build preparation - Install Packages
       #   if: matrix.platform == 'macos-latest'
@@ -157,8 +180,8 @@ jobs:
           cd build
           wget https://github.com/probonopd/linuxdeployqt/releases/download/6/linuxdeployqt-6-x86_64.AppImage
           chmod +x ./linuxdeployqt-6-x86_64.AppImage
-          ./linuxdeployqt-6-x86_64.AppImage --appimage-extract
-          cd AppDir
+          # ./linuxdeployqt-6-x86_64.AppImage --appimage-extract
+          # cd AppDir
           ls * -R
       #     wget -c https://github.com/darealshinji/AppImageKit-checkrt/releases/download/continuous/AppRun-patched-x86_64 -O AppRun
       #     chmod a+x AppRun
