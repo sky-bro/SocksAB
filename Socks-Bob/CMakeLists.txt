@@ -7,3 +7,6 @@ target_include_directories(Socks-Bob PUBLIC
                           "${PROJECT_SOURCE_DIR}/lib"
                           PRIVATE ${BOTAN_INCLUDE_DIRS}
                           )
+
+install(TARGETS Socks-Bob RUNTIME DESTINATION bin)
+

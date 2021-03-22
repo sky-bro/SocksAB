@@ -21,3 +21,5 @@ target_include_directories(Socks-Alice
     "${PROJECT_SOURCE_DIR}/lib"
     PRIVATE ${BOTAN_INCLUDE_DIRS}
     )
+
+install(TARGETS Socks-Alice RUNTIME DESTINATION bin)
