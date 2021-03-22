@@ -6,5 +6,5 @@ Comment=Client side of SocksAB, a simple proxy app
 Keywords=Internet;VPN;Proxy;Qt;
 Categories=Network;Qt;
 Terminal=false
-Icon=heart.png
+Icon=Socks-Alice
 Exec=Socks-Alice
