@@ -18,6 +18,7 @@ jobs:
     strategy:
       matrix:
         qt_version: [5.15.0]
+        appname: [Socks-Alice, Socks-Bob]
         platform: [ubuntu-16.04, macos-latest, windows-latest]
         arch: [x64]
         include:
@@ -32,10 +33,10 @@ jobs:
     #   _QV2RAY_BUILD_EXTRA_INFO_: "qt${{ matrix.qt_version }}-${{ github.sha }}-ci.${{ matrix.platform }}"
 
     steps:
-      # - name: Get the version
-      #   id: get_version
-      #   shell: bash
-      #   run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - name: Get the version
+        id: get_version
+        shell: bash
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
       - name: Checking out sources
         uses: actions/checkout@v2
       - name: Install Python 3.7 version
@@ -64,11 +65,9 @@ jobs:
         with:
           version: ${{ matrix.qt_version }}
           arch: ${{ matrix.qtarch }}
-          mirror: "http://mirrors.ocf.berkeley.edu/qt/"
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       # =========================================================================================================
-      - name: Linux - Cache Botan
-        if: matrix.platform == 'ubuntu-16.04'
+      - name: Cache Botan
         id: cache-botan
         uses: actions/cache@v2
         with:
@@ -83,6 +82,22 @@ jobs:
           ./configure.py --prefix=/usr
           make -j`nproc`
 
+      - name: macOS - Compile Botan
+        if: matrix.platform == 'macos-latest' && steps.cache-botan.outputs.cache-hit != 'true'
+        run: |
+          wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
+          tar -xvf 2.17.3.tar.gz
+          cd botan-2.17.3/
+          ./configure.py --prefix=/usr --cc-abi-flags="-force_cpusubtype_ALL -mmacosx-version-min=10.4 -arch i386 -arch ppc"
+          make -j`nproc`
+
+      - name: Win - Compile Botan
+        if: matrix.platform == 'windows-latest' && steps.cache-botan.outputs.cache-hit != 'true'
+        run: |
+          python configure.py --cc=msvc --os=windows
+          nmake
+          nmake check
+
       - name: Linux - ${{ matrix.qt_version }} - Build preparation - Install Packages
         if: matrix.platform == 'ubuntu-16.04'
         run: |
@@ -96,29 +111,21 @@ jobs:
           cd botan-2.17.3/
           sudo make install
       
-      # - name: macOS - Compile Botan
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     # 123
-      # - name: Win - Compile Botan
-      #   if: matrix.platform == 'windows-latest'
-      #   run: |
-      #     python configure.py --cc=msvc --os=windows
-      #     nmake
-      #     nmake check
       # --------------------------------------------------------
-      # - name: macOS - ${{ matrix.qt_version }} - Build preparation - Install Packages
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     # brew install protobuf grpc ninja pkg-config
-      #     brew install ninja pkg-config
-      # # --------------------------------------------------------
-      # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Setup Ninja
-      #   if: matrix.platform == 'windows-latest'
-      #   uses: ashutoshvarma/setup-ninja@master
-      #   with:
-      #     # ninja version to download. Default: 1.10.0
-      #     version: 1.10.0   
+      - name: macOS - ${{ matrix.qt_version }} - Build preparation - Install Packages
+        if: matrix.platform == 'macos-latest'
+        run: |
+          # brew install protobuf grpc ninja pkg-config
+          brew install ninja pkg-config
+          cd botan-2.17.3/
+          sudo make install
+      # --------------------------------------------------------
+      - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Setup Ninja
+        if: matrix.platform == 'windows-latest'
+        uses: ashutoshvarma/setup-ninja@master
+        with:
+          # ninja version to download. Default: 1.10.0
+          version: 1.10.0   
       # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Build preparation - Download Dependencies
       #   shell: bash
       #   if: matrix.platform == 'windows-latest'
@@ -130,37 +137,38 @@ jobs:
       #   with:
       #     pathSource: ./libs/Qv2ray-deps-grpc-${{ matrix.arch }}-windows.7z
       #     pathTarget: ./libs
-      # # ========================================================================================================= Generate MakeFile and Build
+      # ========================================================================================================= Generate MakeFile and Build
 
-      # - uses: actions/setup-node@v1
-      #   if: matrix.platform == 'macos-latest'
-      #   with:
-      #     node-version: "12.x"
-      # - run: npm install -g appdmg
-      #   if: matrix.platform == 'macos-latest'
-      # - name: macOS - ${{ matrix.qt_version }} - Generate Dependencies and Build
-      #   shell: bash
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     mkdir build
-      #     cd build
-      #     cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DDS_STORE_SCRIPT=ON
-      #     cmake --build . --parallel $(sysctl -n hw.logicalcpu)
-      #     sudo cmake --install .
+      - uses: actions/setup-node@v1
+        if: matrix.platform == 'macos-latest'
+        with:
+          node-version: "12.x"
+      - run: npm install -g appdmg
+        if: matrix.platform == 'macos-latest'
+      - name: macOS - ${{ matrix.qt_version }} - Generate Dependencies and Build
+        shell: bash
+        if: matrix.platform == 'macos-latest'
+        run: |
+          mkdir build
+          cd build
+          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DDS_STORE_SCRIPT=ON
+          cmake --build . --parallel $(sysctl -n hw.logicalcpu)
+          # sudo cmake --install .
       #     appdmg ../assets/package_dmg.json ../Qv2ray.dmg
-      # # --------------------------------------------------------
-      # - name: Windows - ${{ matrix.qt_version }} - Generate Dependencies and Build
-      #   shell: bash
-      #   if: matrix.platform == 'windows-latest'
-      #   env:
-      #     CC: cl.exe
-      #     CXX: cl.exe
-      #   run: |
-      #     mkdir build
-      #     cd build
-      #     cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=./deployment -DCMAKE_BUILD_TYPE=Release
-      #     cmake --build . --parallel $(nproc)
-      #     cmake --install .
+      # --------------------------------------------------------
+      - name: Windows - ${{ matrix.qt_version }} - Generate Dependencies and Build
+        shell: bash
+        if: matrix.platform == 'windows-latest'
+        env:
+          CC: cl.exe
+          CXX: cl.exe
+        run: |
+          mkdir build
+          cd build
+          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=./deployment -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --parallel $(nproc)
+          cmake --install .
+          ls * -R
       # --------------------------------------------------------
       - name: Linux - ${{ matrix.qt_version }} - Generate Dependencies and Build
         if: matrix.platform == 'ubuntu-16.04'
@@ -219,19 +227,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/Socks-Alice.AppImage
-          # asset_name: Qv2ray.${{ steps.get_version.outputs.VERSION }}.linux-${{ matrix.arch }}.AppImage
-          asset_name: Socks-Alice.linux-${{ matrix.arch }}.AppImage
-          tag: ${{ github.ref }}
-          overwrite: true
-      - name: Linux - ${{ matrix.qt_version }} - Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
-        # if: matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
-        if: github.event_name == 'release' && matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/Socks-Bob.AppImage
-          # asset_name: Qv2ray.${{ steps.get_version.outputs.VERSION }}.linux-${{ matrix.arch }}.AppImage
-          asset_name: Socks-Bob.linux-${{ matrix.arch }}.AppImage
+          asset_name: ${{ matrix.appname }}.${{ steps.get_version.outputs.VERSION }}.linux-${{ matrix.arch }}.AppImage
           tag: ${{ github.ref }}
           overwrite: true
       # --------------------------------------------------------
