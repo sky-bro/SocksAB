@@ -29,8 +29,13 @@ int main(int argc, char *argv[]) {
   method = "aes-128-ctr";
   // std::string password = str_key.toStdString();
   TcpServer tcpserver(30, false, serverAddr, serverPort, method.toStdString(), str_key.toStdString());
-  qDebug() << "hello from Bob (Server Side)" << ", listening at" << (str_ip + ":" + str_port);
-  tcpserver.listen(serverAddr, serverPort);
+
+  if (serverPort && tcpserver.listen(serverAddr, serverPort)) {
+      qDebug("hello from Bob (Server Side), listening at %s:%d", qUtf8Printable(tcpserver.serverAddress().toString()), tcpserver.serverPort());
+  } else {
+      qDebug() << "fail to listen at" << (str_ip + ":" + str_port);
+      return 1;
+  }
 
   return a.exec();
 }
