@@ -2,23 +2,47 @@
 
 ## 编译与安装
 
-TODO
+### 手动编译安装
 
-* 直接从releases中下载对应系统的解压运行即可
+需要提前准备好密码学库botan2
 
-### 依赖
+如果用windows或mac，CMakeLists.txt需要修改/补充，TODO
 
-* botan-2>=2.3.0
+```shell
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make
+sudo make install
+```
 
-## 配置文件说明
+### 直接下载使用
 
-Socks-Alice采用的配置文件
+可以直接从releases中下载对应系统的文件然后解压运行即可，依赖也跟着打包了
 
 ## 运行或测试
 
 * 首先根据你的环境写好配置文件，配置文件保存在和Socks-Alice相同的路径
 * 可以使用ssh在本地快速搭建一个socks5服务器，可以参考[利用ssh快速建一个socks5服务器用于测试](https://www.jianshu.com/p/1f34f944b081)
   * 如 `ssh -fND 127.1:2000 sky@localhost`
+
+### Socks-Alice使用
+
+TODO
+
+### Socks-Bob使用
+
+```shell
+❯ ./Socks-Bob/Socks-Bob -h
+Usage: ./Socks-Bob/Socks-Bob [options]
+
+Options:
+  -h, --help         Displays help on commandline options.
+  --help-all         Displays help including Qt specific options.
+  -i, --ip <ip>      ip address of Socks-Bob
+  -p, --port <port>  port of Socks-Bob
+  -k, --key <key>    shared secret between Alice and Bob
+```
 
 ## THINKG / TODO
 
@@ -50,6 +74,6 @@ Socks-Alice采用的配置文件
       * 备注/名字, 入口ip:port, 代理出口ip:port, 密码, 加密方式method, 超时
       * 延迟/是否畅通, 当前是否连接此链路
 * 添加Actions自动编译并发布
-  * [ ] linux
+  * [x] linux
   * [ ] windows
   * [ ] mac
