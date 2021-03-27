@@ -165,9 +165,9 @@ jobs:
         run: |
           mkdir build
           cd build
-          # cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=./deployment -DCMAKE_BUILD_TYPE=Release
-          # cmake --build . --parallel $(nproc)
-          # cmake --install .
+          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=./deployment -DCMAKE_BUILD_TYPE=Release -DUSE_WINDEPLOYQT=ON
+          cmake --build . --parallel $(nproc)
+          cmake --install .
           # ls * -R
       # --------------------------------------------------------
       - name: Linux - ${{ matrix.qt_version }} - Generate Dependencies and Build
@@ -255,24 +255,45 @@ jobs:
       #     tag: ${{ github.ref }}
       #     overwrite: true
       # # --------------------------------------------------------
-      # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Create 7z Release
-      #   if: matrix.platform == 'windows-latest'
-      #   uses: DuckSoft/create-7z-action@v1.0
-      #   with:
-      #     pathSource: ./build/deployment/
-      #     pathTarget: ./release.7z
+      - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Create 7z Release
+        if: matrix.platform == 'windows-latest'
+        uses: DuckSoft/create-7z-action@v1.0
+        with:
+          pathSource: ./build/deployment/alice/
+          pathTarget: ./release-alice.7z
       # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Uploading artifact
       #   if: matrix.platform == 'windows-latest'
       #   uses: actions/upload-artifact@master
       #   with:
-      #     name: Qv2ray-${{ github.sha }}.Windows-${{ matrix.arch }}.qt${{ matrix.qt_version }}.7z
-      #     path: release.7z
-      # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Upload binaries to release
-      #   uses: svenstaro/upload-release-action@v1-release
-      #   if: github.event_name == 'release' && matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
+      #     name: Socks-Alice-${{ github.sha }}.Windows-${{ matrix.arch }}.qt${{ matrix.qt_version }}.7z
+      #     path: release-alice.7z
+      - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: github.event_name == 'release' && matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: release-alice.7z
+          asset_name: Socks-Alice.${{ steps.get_version.outputs.VERSION }}.Windows-${{ matrix.arch }}.7z
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Create 7z Release
+        if: matrix.platform == 'windows-latest'
+        uses: DuckSoft/create-7z-action@v1.0
+        with:
+          pathSource: ./build/deployment/bob/
+          pathTarget: ./release-bob.7z
+      # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Uploading artifact
+      #   if: matrix.platform == 'windows-latest'
+      #   uses: actions/upload-artifact@master
       #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: release.7z
-      #     asset_name: Qv2ray.${{ steps.get_version.outputs.VERSION }}.Windows-${{ matrix.arch }}.7z
-      #     tag: ${{ github.ref }}
-      #     overwrite: true
+      #     name: Socks-Alice-${{ github.sha }}.Windows-${{ matrix.arch }}.qt${{ matrix.qt_version }}.7z
+      #     path: release-alice.7z
+      - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: github.event_name == 'release' && matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: release-bob.7z
+          asset_name: Socks-Bob.${{ steps.get_version.outputs.VERSION }}.Windows-${{ matrix.arch }}.7z
+          tag: ${{ github.ref }}
+          overwrite: true

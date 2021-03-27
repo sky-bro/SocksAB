@@ -22,6 +22,17 @@ target_include_directories(Socks-Alice
     PRIVATE ${BOTAN_INCLUDE_DIRS}
     )
 
-install(TARGETS Socks-Alice RUNTIME DESTINATION bin)
-install(FILES Socks-Alice.desktop DESTINATION share/applications)
-install(FILES heart.png DESTINATION share/icons RENAME SocksAB.png)
+if (UNIX AND NOT APPLE AND NOT WIN32)
+    install(TARGETS Socks-Alice RUNTIME DESTINATION bin)
+    install(FILES Socks-Alice.desktop DESTINATION share/applications)
+    install(FILES heart.png DESTINATION share/icons RENAME SocksAB.png)
+endif()
+
+if(WIN32)
+    install(TARGETS Socks-Alice RUNTIME DESTINATION alice)
+    if(USE_WINDEPLOYQT)
+        add_custom_command(TARGET Socks-Alice POST_BUILD
+            COMMAND ${Qt5_DIR}/../../../bin/windeployqt ${CMAKE_BINARY_DIR}/Socks-Alice.exe --compiler-runtime --verbose 2
+            )
+    endif()
+endif()
