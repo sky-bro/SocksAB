@@ -19,11 +19,11 @@ set(SOURCE
 
 add_library(socksAB ${SOURCE})
 
+target_include_directories(socksAB
+    PUBLIC ${Botan_INCLUDE_DIR})
+
 target_link_libraries(socksAB
     PUBLIC Qt${QT_VERSION_MAJOR}::Network
-    PRIVATE ${BOTAN_LIBRARY_VAR})
+    PRIVATE Botan::Botan)
 
-target_include_directories(socksAB
-    PRIVATE ${BOTAN_INCLUDE_DIRS})
-
-message(${BOTAN_INCLUDE_DIRS})
+message("botan include dir: ${Botan_INCLUDE_DIR}")

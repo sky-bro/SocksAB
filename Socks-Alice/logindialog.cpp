@@ -38,7 +38,7 @@ void LoginDialog::on_btnLogin_clicked()
     auto it = userDB.find(username);
     if (it == userDB.end() || it.value() != password) {
         qDebug() << "login failed!";
-        QMessageBox::warning(this, "登录失败", "帐号或密码错误，请重试。");
+        QMessageBox::warning(this, "login failed", "please check your account/password!");
         return;
     }
 

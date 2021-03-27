@@ -11,16 +11,12 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Network Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Network Widgets REQUIRED)
+find_package(Botan REQUIRED)
 
-find_package(PkgConfig)
-pkg_search_module(BOTAN REQUIRED botan-2>=2.3.0)
-find_library(BOTAN_LIBRARY_VAR
-    NAMES ${BOTAN_LIBRARIES}
-    HINTS ${BOTAN_LIBRARY_DIRS} ${BOTAN_LIBDIR})
-
-#message(Qt${QT_VERSION_MAJOR}) # Qt5
 add_subdirectory(lib)
 add_subdirectory(Socks-Alice)
 add_subdirectory(Socks-Bob)

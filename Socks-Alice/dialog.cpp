@@ -42,23 +42,25 @@ Dialog::~Dialog()
 void Dialog::closeEvent(QCloseEvent *event)
 {
     QMessageBox::StandardButton button;
-    button = QMessageBox::question(this, tr("退出程序"),
-        QString(tr("您确定要退出吗?")),
-        QMessageBox::Yes | QMessageBox::No);
+    button = QMessageBox::question(this, tr("Exit"), QString(tr("Are you sure you want to exit?\nElse it will be hidden!")), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
     if (button == QMessageBox::No) {
         event->ignore();  //忽略退出信号，程序继续运行
+        hide();
     }
     else if (button == QMessageBox::Yes) {
-        event->accept();  //接受退出信号，程序退出
+         event->accept();  //接受退出信号，程序退出
         if (tcpServer) tcpServer->close();
         writeSettings();
         exit(0);
+    } else {
+        event->ignore();
     }
 }
 
 void Dialog::initTrayIcon()
 {
+    qDebug() << "init Tray Icon";
     mSystemTrayIcon = new QSystemTrayIcon(this);
     mSystemTrayIcon->setIcon(QIcon(":/images/heart.png"));
     mSystemTrayIcon->show();
@@ -67,9 +69,9 @@ void Dialog::initTrayIcon()
 
     QMenu *menu = new QMenu(this);
 
-    QAction *show_hide_action = new QAction("显示/隐藏", mSystemTrayIcon);
+    QAction *show_hide_action = new QAction("Show/Hide", mSystemTrayIcon);
     connect(show_hide_action, &QAction::triggered, this, &Dialog::show_hide);
-    QAction *quit_action = new QAction("退出", mSystemTrayIcon);
+    QAction *quit_action = new QAction("Exit", mSystemTrayIcon);
     connect(quit_action, &QAction::triggered, this, &QCoreApplication::quit);
 
     menu->addAction(show_hide_action);
@@ -106,16 +108,16 @@ void Dialog::setState(bool isStarted)
     this->isStarted = isStarted;
     if (isStarted) {
         // server running
-        ui->btnRun->setText("停止");
+        ui->btnRun->setText("Stop");
 //        ui->lineEditIP->setEnabled(false);
 //        ui->spinBoxSocksPort->setEnabled(false);
-        mSystemTrayIcon->setToolTip(tr("Socks-Alice(运行中)，监听地址 -- %0:%1").arg(addr.toString()).arg(port));
+        mSystemTrayIcon->setToolTip(tr("Socks-Alice(Running)，listening at -- %0:%1").arg(addr.toString()).arg(port));
     } else {
         // server stopped
-        ui->btnRun->setText("运行");
+        ui->btnRun->setText("Run");
 //        ui->lineEditIP->setEnabled(true);
 //        ui->spinBoxPort->setEnabled(true);
-        mSystemTrayIcon->setToolTip(tr("Socks-Alice(未运行)"));
+        mSystemTrayIcon->setToolTip(tr("Socks-Alice(Stopped)"));
     }
 }
 
@@ -254,10 +256,10 @@ void Dialog::on_btnRun_clicked()
         port = ui->spinBoxSocksPort->value();
 //        cout << "starting server @" << addr << port;
         if (tcpServer && tcpServer->QTcpServer::listen(addr, port)) {
-            mSystemTrayIcon->showMessage(tr("正在监听"), tr("监听地址 -- %0:%1").arg(addr.toString()).arg(port), QSystemTrayIcon::Information, 5000);
+            mSystemTrayIcon->showMessage(tr("Listening"), tr("listening at -- %0:%1").arg(addr.toString()).arg(port), QSystemTrayIcon::Information, 5000);
             setState(true);
         } else {
-            mSystemTrayIcon->showMessage(tr("运行失败"), tr("请检查地址端口是否正确, 或者是否正确选择好链路"), QSystemTrayIcon::Warning, 3000);
+            mSystemTrayIcon->showMessage(tr("Run Failed"), tr("Please check your ip/port"), QSystemTrayIcon::Warning, 3000);
         }
     } else {
         // stop server
