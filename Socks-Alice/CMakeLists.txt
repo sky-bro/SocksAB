@@ -32,7 +32,7 @@ if(WIN32)
     install(TARGETS Socks-Alice RUNTIME DESTINATION alice)
     if(USE_WINDEPLOYQT)
         add_custom_command(TARGET Socks-Alice POST_BUILD
-            COMMAND ${Qt5_DIR}/../../../bin/windeployqt ${CMAKE_BINARY_DIR}/Socks-Alice.exe --compiler-runtime --verbose 2
+            COMMAND ${Qt5_DIR}/../../../bin/windeployqt ${CMAKE_CURRENT_BINARY_DIR}/Socks-Alice.exe --compiler-runtime --verbose 2 --dir ${CMAKE_CURRENT_BINARY_DIR}/alice/
             )
     endif()
 endif()
