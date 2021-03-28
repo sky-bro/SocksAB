@@ -17,6 +17,7 @@ if(WIN32)
     if(USE_WINDEPLOYQT)
         add_custom_command(TARGET Socks-Bob POST_BUILD
             COMMAND ${Qt5_DIR}/../../../bin/windeployqt ${CMAKE_CURRENT_BINARY_DIR}/Socks-Bob.exe --compiler-runtime --verbose 2 --dir ${CMAKE_CURRENT_BINARY_DIR}/winqt-bob/
+            COMMAND ${CMAKE_COMMAND} -E copy ${Botan_LIBRARY}/../../bin/botan.dll ${CMAKE_CURRENT_BINARY_DIR}/winqt-bob/
             )
     endif()
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/winqt-bob/ DESTINATION bob)
