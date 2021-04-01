@@ -11,7 +11,11 @@ set(SOURCE
     editdialog.ui
     main.cpp)
 
-add_executable(Socks-Alice ${SOURCE})
+if(WIN32)
+    add_executable(Socks-Alice WIN32 ${SOURCE})
+else()
+    add_executable(Socks-Alice ${SOURCE})
+endif()
 
 target_link_libraries(Socks-Alice PRIVATE socksAB)
 target_link_libraries(Socks-Alice PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
