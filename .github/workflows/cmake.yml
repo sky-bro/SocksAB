@@ -104,9 +104,10 @@ jobs:
         run: |
           # sudo add-apt-repository ppa:webispy/grpc
           # sudo add-apt-repository ppa:carsten-uppenbrink-net/openssl
-          sudo apt update
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt update -y
+          sudo apt-get install gcc-7 g++-7 -y
           sudo apt install -y libgl-dev libx11-dev libxkbcommon-x11-dev libxcb-image0-dev libxcb-icccm4-dev libssl-dev libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0
-          # sudo apt install -y libprotobuf-dev protobuf-compiler protobuf-c-compiler libgrpc++-dev protobuf-compiler-grpc ninja-build fcitx-frontend-qt5
           sudo apt install ninja-build
           # install botan2
           cd botan-2.17.3/
