@@ -62,7 +62,7 @@ void Dialog::initTrayIcon()
 {
     qDebug() << "init Tray Icon";
     mSystemTrayIcon = new QSystemTrayIcon(this);
-    mSystemTrayIcon->setIcon(QIcon(":/images/heart.png"));
+    mSystemTrayIcon->setIcon(QIcon(":/images/SocksAB.png"));
     mSystemTrayIcon->show();
 
     connect(mSystemTrayIcon, &QSystemTrayIcon::activated, this, &Dialog::trayiconActivated);
@@ -223,7 +223,9 @@ void Dialog::setServer(int r)
     quint16 proxyport = ui->serverList->item(r, COL_PROXYPORT)->text().toUShort();
     tcpServer = new TcpServer(10, true, serverip, serverport, method, key, proxyip, proxyport);
     bgBrush = ui->serverList->item(r, 0)->background();
+    fgBrush = ui->serverList->item(r, 0)->foreground();
     ui->serverList->item(r, 0)->setBackground(Qt::green);
+    ui->serverList->item(r, 0)->setForeground(Qt::black);
 }
 
 void Dialog::trayiconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -316,6 +318,7 @@ void Dialog::onDisconnect()
         delete tcpServer;
         tcpServer = nullptr;
         ui->serverList->item(row, COL_NAME)->setBackground(bgBrush);
+        ui->serverList->item(row, COL_NAME)->setForeground(fgBrush);
     }
 }
 

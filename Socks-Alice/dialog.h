@@ -52,6 +52,7 @@ private:
     QHostAddress addr; // local addr
     quint16 port; // local port
     QBrush bgBrush;
+    QBrush fgBrush;
     QMenu *menuConnection;
 
     void initTrayIcon();

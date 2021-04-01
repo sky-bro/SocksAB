@@ -25,7 +25,7 @@ target_include_directories(Socks-Alice
 if (UNIX AND NOT APPLE AND NOT WIN32)
     install(TARGETS Socks-Alice RUNTIME DESTINATION bin)
     install(FILES Socks-Alice.desktop DESTINATION share/applications)
-    install(FILES heart.png DESTINATION share/icons RENAME SocksAB.png)
+    install(FILES SocksAB.png DESTINATION share/icons RENAME SocksAB.png)
 endif()
 
 if(WIN32)
