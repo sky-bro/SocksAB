@@ -119,7 +119,7 @@ void TcpRelay::close() {
     qWarning("already destroyed");
     return;
   }
-  m_remote->setProxy(QNetworkProxy::NoProxy);
+  // m_remote->setProxy(QNetworkProxy::NoProxy); // useless
   m_local->close();
   m_remote->close();
   m_stage = DESTROYED;

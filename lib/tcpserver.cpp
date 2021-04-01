@@ -23,6 +23,9 @@ bool TcpServer::listen(QString localAddr, quint16 localPort) {
 
 TcpServer::~TcpServer() {
   if (isListening()) close();
+  for (auto con: m_conSet) {
+    delete con;
+  }
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) {
@@ -30,16 +33,16 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) {
   localSocket->setSocketDescriptor(socketDescriptor);
   qInfo() << "New connection from " << localSocket->peerAddress() << ":" << localSocket->peerPort();
   //timeout * 1000: convert sec to msec
-  std::shared_ptr<TcpRelay> con;
+  TcpRelay* con;
   if (m_isLocal) {
-    con = std::make_shared<TcpRelayClient>(localSocket.release(),
+    con = new TcpRelayClient(localSocket.release(),
                                            m_timeout * 1000,
                                            m_serverAddr, m_serverPort,
     [this]() {
       return std::make_unique<Cipher>(m_method, m_password);
     }, m_proxyAddr, m_proxyPort);
   } else {
-    con = std::make_shared<TcpRelayServer>(localSocket.release(),
+    con = new TcpRelayServer(localSocket.release(),
                                            m_timeout * 1000,
                                            m_serverAddr, m_serverPort,
     [this]() {
@@ -47,7 +50,9 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) {
     });
   }
   m_conSet.push_back(con);
-  connect(con.get(), &TcpRelay::finished, this, [con, this]() {
+  connect(con, &TcpRelay::finished, this, [con, this]() {
+    qInfo() << "con removed from m_conSet";
     m_conSet.remove(con);
+    con->deleteLater();
   });
 }

@@ -12,6 +12,9 @@ class TcpRelay: public QObject {
   Q_OBJECT
  public:
   TcpRelay(QTcpSocket *localSocket, int timeout, QHostAddress server_addr, quint16 server_port, Cipher::CipherCreator get_cipher);
+  virtual ~TcpRelay() {
+    qInfo() << "TcpRelay destroyed";
+  }
 
   enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 

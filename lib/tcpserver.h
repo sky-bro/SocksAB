@@ -30,7 +30,7 @@ private:
     std::string m_method;
     std::string m_password;
 
-    std::list<std::shared_ptr<TcpRelay> > m_conSet;
+    std::list<TcpRelay*> m_conSet;
 };
 
 #endif // TCPSERVER_H
