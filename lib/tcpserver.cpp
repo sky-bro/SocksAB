@@ -23,9 +23,6 @@ bool TcpServer::listen(QString localAddr, quint16 localPort) {
 
 TcpServer::~TcpServer() {
   if (isListening()) close();
-  for (auto con: m_conSet) {
-    delete con;
-  }
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) {
