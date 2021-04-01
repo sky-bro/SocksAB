@@ -10,6 +10,7 @@ set(SOURCE
     editdialog.h
     editdialog.ui
     main.cpp)
+qt5_add_resources(SOURCE res.qrc)
 
 if(WIN32)
     add_executable(Socks-Alice WIN32 ${SOURCE})
