@@ -28,7 +28,30 @@ sudo make install
 
 ### Socks-Alice使用
 
-TODO
+我们根据自己的操作系统下载对应的客户端就行，也就是Socks-Alice
+
+> 下载地址: https://github.com/sky-bro/SocksAB/releases
+
+1. 双击Socks-Alice运行（windows先解压）
+
+2. 一个登录窗口，是个假的，啥都不用输，直接回车就行
+
+   ![login dialog](./images/login.png)
+
+3. 两个tab，**本地代理**设置本地的ip和端口（最近了解到`127.1 == 127.0.0.1`），HTTP代理过几天就有了
+
+   ![local settings](./images/local-settings.png)
+
+4. **链路选择**就是添加服务器的，右键然后Add Server
+
+   ![add server](./images/add-server.png)
+
+   要连接某个服务器的话要把当前连接的那个服务器断开，右键对应的行就能看到Disconnect选项
+
+   修改或是删除某个正连接着的服务器也要把它先断开
+
+5. 添加了Server要运行，就右键对应的行，点connect（点完之后本地代理那儿会自动run的，点disconnect也会自动stop run）
+6. 最后就是为自己的软件配置Socks5代理（http代理现在还不可用）
 
 ### Socks-Bob使用
 
