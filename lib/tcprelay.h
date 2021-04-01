@@ -6,6 +6,7 @@
 #include "cipher.h"
 #include <QTimer>
 #include <QHostAddress>
+#include <QNetworkProxy>
 
 class TcpRelay: public QObject {
   Q_OBJECT

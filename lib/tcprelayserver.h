@@ -2,7 +2,6 @@
 #define TCPRELAYSERVER_H
 
 #include "tcprelay.h"
-#include <QNetworkProxy>
 
 class TcpRelayServer: public TcpRelay
 {

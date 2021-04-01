@@ -11,6 +11,7 @@ void TcpRelayServer::handleStageADDR(std::string &data) {
   Address address;
   int len1 = address.update_from_data(data); // get proxy addr:port
   data = data.substr(len1);
+  // TODO: optional proxy_addr ?
   Address proxy_addr(data); // remote addr
   if (address.m_addr_type == Address::NOTYPE || proxy_addr.m_addr_type == Address::NOTYPE) {
     qCritical("Can't parse header. Wrong encryption method or password?");

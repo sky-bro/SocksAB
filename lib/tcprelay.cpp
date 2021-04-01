@@ -110,14 +110,16 @@ void TcpRelay::onRemoteTcpSocketReadyRead() {
 }
 
 void TcpRelay::onTimeout() {
+  qWarning("time out triggered!");
   close();
 }
 
 void TcpRelay::close() {
   if (m_stage == DESTROYED) {
+    qWarning("already destroyed");
     return;
   }
-
+  m_remote->setProxy(QNetworkProxy::NoProxy);
   m_local->close();
   m_remote->close();
   m_stage = DESTROYED;
