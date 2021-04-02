@@ -79,15 +79,16 @@ jobs:
           ./configure.py --prefix=/usr
           make -j`nproc`
 
-      # - name: macOS - Compile Botan
-      #   if: matrix.platform == 'macos-latest' && steps.cache-botan.outputs.cache-hit != 'true'
-      #   run: |
-      #     wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
-      #     tar -xf 2.17.3.tar.gz
-      #     cd botan-2.17.3/
-      #     export MACOSX_DEPLOYMENT_TARGET=10.10
-      #     ./configure.py --prefix=/usr
-      #     make -j`nproc`
+      - name: macOS - Compile Botan
+        if: matrix.platform == 'macos-latest' && steps.cache-botan.outputs.cache-hit != 'true'
+        run: |
+          wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
+          tar -xf 2.17.3.tar.gz
+          cd botan-2.17.3/
+          # export MACOSX_DEPLOYMENT_TARGET=10.10
+          python configure.py --os=darwin --cc=clang --cpu=x64
+          # ./configure.py --prefix=/usr
+          sudo make -j`nproc`
 
       - name: Win - Compile Botan
         if: matrix.platform == 'windows-latest' && steps.cache-botan.outputs.cache-hit != 'true'
@@ -120,7 +121,7 @@ jobs:
           # brew install protobuf grpc ninja pkg-config
           brew install ninja pkg-config
           cd botan-2.17.3/
-          # sudo make install
+          sudo make install
       # --------------------------------------------------------
       - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Setup Ninja
         if: matrix.platform == 'windows-latest'
@@ -140,22 +141,22 @@ jobs:
           nmake install
       # ========================================================================================================= Generate MakeFile and Build
 
-      # - uses: actions/setup-node@v1
-      #   if: matrix.platform == 'macos-latest'
-      #   with:
-      #     node-version: "12.x"
-      # - run: npm install -g appdmg
-      #   if: matrix.platform == 'macos-latest'
-      # - name: macOS - ${{ matrix.qt_version }} - Generate Dependencies and Build
-      #   shell: bash
-      #   if: matrix.platform == 'macos-latest'
-      #   run: |
-      #     mkdir build
-      #     cd build
-      #     cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DDS_STORE_SCRIPT=ON
-      #     cmake --build . --parallel $(sysctl -n hw.logicalcpu)
-      #     sudo cmake --install .
-      #     appdmg ../assets/package_dmg.json ../Qv2ray.dmg
+      - uses: actions/setup-node@v1
+        if: matrix.platform == 'macos-latest'
+        with:
+          node-version: "12.x"
+      - run: npm install -g appdmg
+        if: matrix.platform == 'macos-latest'
+      - name: macOS - ${{ matrix.qt_version }} - Generate Dependencies and Build
+        shell: bash
+        if: matrix.platform == 'macos-latest'
+        run: |
+          mkdir build
+          cd build
+          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DDS_STORE_SCRIPT=ON
+          cmake --build . --parallel $(sysctl -n hw.logicalcpu)
+          # sudo cmake --install .
+          # appdmg ../assets/package_dmg.json ../Qv2ray.dmg
       # --------------------------------------------------------
       - name: Windows - ${{ matrix.qt_version }} - Generate Dependencies and Build
         shell: bash
