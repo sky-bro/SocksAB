@@ -65,13 +65,14 @@ jobs:
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
       # =========================================================================================================
       - name: Cache Botan
+        if: matrix.platform != 'macos-latest' && steps.cache-botan.outputs.cache-hit != 'true'
         id: cache-botan
         uses: actions/cache@v2
         with:
           path: botan-2.17.3/
           key: BotanCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
-      - name: Linux/macOS - Compile Botan
-        if: (matrix.platform == 'ubuntu-16.04' || matrix.platform == 'macos-latest') && steps.cache-botan.outputs.cache-hit != 'true'
+      - name: Linux - Compile Botan
+        if: matrix.platform == 'ubuntu-16.04' && steps.cache-botan.outputs.cache-hit != 'true'
         run: |
           wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
           tar -xf 2.17.3.tar.gz
@@ -79,16 +80,16 @@ jobs:
           ./configure.py --prefix=/usr
           make -j`nproc`
 
-      - name: macOS - Compile Botan
-        if: matrix.platform == 'macos-latest' && steps.cache-botan.outputs.cache-hit != 'true'
-        run: |
-          wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
-          tar -xf 2.17.3.tar.gz
-          cd botan-2.17.3/
-          # export MACOSX_DEPLOYMENT_TARGET=10.10
-          python configure.py --os=darwin --cc=clang --cpu=x64
-          # ./configure.py --prefix=/usr
-          sudo make -j`nproc`
+      # - name: macOS - Compile Botan
+      #   if: matrix.platform == 'macos-latest' && steps.cache-botan.outputs.cache-hit != 'true'
+      #   run: |
+      #     wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
+      #     tar -xf 2.17.3.tar.gz
+      #     cd botan-2.17.3/
+      #     # export MACOSX_DEPLOYMENT_TARGET=10.10
+      #     python configure.py --os=darwin --cc=clang --cpu=x64
+      #     # ./configure.py --prefix=/usr
+      #     sudo make -j`nproc`
 
       - name: Win - Compile Botan
         if: matrix.platform == 'windows-latest' && steps.cache-botan.outputs.cache-hit != 'true'
@@ -119,9 +120,9 @@ jobs:
         if: matrix.platform == 'macos-latest'
         run: |
           # brew install protobuf grpc ninja pkg-config
-          brew install ninja pkg-config
-          cd botan-2.17.3/
-          sudo make install
+          brew install ninja pkg-config botan
+          # cd botan-2.17.3/
+          # sudo make install
       # --------------------------------------------------------
       - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Setup Ninja
         if: matrix.platform == 'windows-latest'
@@ -153,10 +154,11 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DDS_STORE_SCRIPT=ON
+          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DUSE_DEPLOYQT=ON
           cmake --build . --parallel $(sysctl -n hw.logicalcpu)
-          # sudo cmake --install .
-          # appdmg ../assets/package_dmg.json ../Qv2ray.dmg
+          # only install Alice for now
+          sudo cmake --install .
+          appdmg ../Socks-Alice/assets/package_dmg.json ../Socks-Alice.dmg
       # --------------------------------------------------------
       - name: Windows - ${{ matrix.qt_version }} - Generate Dependencies and Build
         shell: bash
@@ -167,7 +169,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=./deployment -DCMAKE_BUILD_TYPE=Release -DUSE_WINDEPLOYQT=ON
+          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=./deployment -DCMAKE_BUILD_TYPE=Release -DUSE_DEPLOYQT=ON
           cmake --build . --parallel $(nproc)
           cmake --install .
           # ls * -R
@@ -247,15 +249,15 @@ jobs:
       #   with:
       #     name: Qv2ray-${{ github.sha }}.macOS-${{ matrix.arch }}.qt${{ matrix.qt_version }}.dmg
       #     path: Qv2ray.dmg
-      # - name: macOS - ${{ matrix.qt_version }} - Upload binaries to release
-      #   uses: svenstaro/upload-release-action@v1-release
-      #   if: github.event_name == 'release' && matrix.platform == 'macos-latest' && matrix.qt_version == '5.15.0'
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: Qv2ray.dmg
-      #     asset_name: Qv2ray-${{ steps.get_version.outputs.VERSION }}.macOS-${{ matrix.arch }}.dmg
-      #     tag: ${{ github.ref }}
-      #     overwrite: true
+      - name: macOS - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: github.event_name == 'release' && matrix.platform == 'macos-latest' && matrix.qt_version == '5.15.0'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: Socks-Alice.dmg
+          asset_name: Socks-Alice-${{ steps.get_version.outputs.VERSION }}.macOS-${{ matrix.arch }}.dmg
+          tag: ${{ github.ref }}
+          overwrite: true
       # # --------------------------------------------------------
       - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Create 7z Release
         if: matrix.platform == 'windows-latest'
