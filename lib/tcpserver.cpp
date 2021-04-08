@@ -5,6 +5,7 @@
 
 TcpServer::TcpServer(int timeout, bool isLocal, QHostAddress serverAddr, quint16 serverPort, std::string method, std::string password) :
   m_timeout(timeout), m_isLocal(isLocal), m_serverAddr(serverAddr), m_serverPort(serverPort), m_password(password), m_method(method), m_proxyPort(0) {
+    setMaxPendingConnections(FD_SETSIZE);
 }
 
 TcpServer::TcpServer(int timeout, bool isLocal, QString serverAddr, quint16 serverPort, std::string method, std::string password)
@@ -12,9 +13,8 @@ TcpServer::TcpServer(int timeout, bool isLocal, QString serverAddr, quint16 serv
 }
 
 TcpServer::TcpServer(int timeout, bool isLocal, QString serverAddr, quint16 serverPort, std::string method, std::string password, QString proxyAddr, quint16 proxyPort)
-    : m_timeout(timeout), m_isLocal(isLocal), m_serverAddr(serverAddr), m_serverPort(serverPort), m_password(password), m_method(method), m_proxyAddr(QHostAddress(proxyAddr)), m_proxyPort(proxyPort)
-{
-
+    : m_timeout(timeout), m_isLocal(isLocal), m_serverAddr(serverAddr), m_serverPort(serverPort), m_password(password), m_method(method), m_proxyAddr(QHostAddress(proxyAddr)), m_proxyPort(proxyPort) {
+    setMaxPendingConnections(FD_SETSIZE);
 }
 
 bool TcpServer::listen(QString localAddr, quint16 localPort) {
