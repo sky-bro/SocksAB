@@ -49,10 +49,9 @@ void Dialog::closeEvent(QCloseEvent *event)
         hide();
     }
     else if (button == QMessageBox::Yes) {
-         event->accept();  //接受退出信号，程序退出
+        event->accept();  //接受退出信号，程序退出
         if (tcpServer) tcpServer->close();
-        writeSettings();
-        exit(0);
+        onQuit();
     } else {
         event->ignore();
     }
@@ -72,7 +71,7 @@ void Dialog::initTrayIcon()
     QAction *show_hide_action = new QAction("Show/Hide", mSystemTrayIcon);
     connect(show_hide_action, &QAction::triggered, this, &Dialog::show_hide);
     QAction *quit_action = new QAction("Exit", mSystemTrayIcon);
-    connect(quit_action, &QAction::triggered, this, &QCoreApplication::quit);
+    connect(quit_action, &QAction::triggered, this, &Dialog::onQuit);
 
     menu->addAction(show_hide_action);
     menu->addAction(quit_action);
@@ -330,4 +329,10 @@ void Dialog::onTestLatency()
 void Dialog::onTestAllLatency()
 {
     // TODO
+}
+
+void Dialog::onQuit()
+{
+    writeSettings();
+    exit(0);
 }

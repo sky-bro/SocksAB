@@ -78,5 +78,6 @@ private slots:
     void onDisconnect();
     void onTestLatency();
     void onTestAllLatency();
+    void onQuit();
 };
 #endif // DIALOG_H
