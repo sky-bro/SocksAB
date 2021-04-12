@@ -22,15 +22,15 @@ int main(int argc, char *argv[]) {
   if (str_ip.isEmpty()) str_ip = "0.0.0.0";
   if (str_port.isEmpty()) str_port = "1082";
   if (str_key.isEmpty()) str_key = "sky-io";
-  QString serverAddr(str_ip);
+  QHostAddress serverAddr(str_ip);
   quint16 serverPort  = str_port.toUShort();
   QString method = "chacha20-ietf-poly1305";
   method = "aes-128-gcm";
   method = "aes-128-ctr";
   // std::string password = str_key.toStdString();
-  TcpServer tcpserver(30, false, serverAddr, serverPort, method.toStdString(), str_key.toStdString());
+  TcpServer tcpserver(30, false);
 
-  if (serverPort && tcpserver.listen(serverAddr, serverPort)) {
+  if (tcpserver.listen(serverAddr, serverPort, method.toStdString(), str_key.toStdString())) {
       qDebug("hello from Bob (Server Side), listening at %s:%d", qUtf8Printable(tcpserver.serverAddress().toString()), tcpserver.serverPort());
   } else {
       qDebug() << "fail to listen at" << (str_ip + ":" + str_port);

@@ -6,15 +6,18 @@
 
 Dialog::Dialog(QWidget *parent, USERTYPE usertype)
     : QDialog(parent)
-    , ui(new Ui::Dialog), tcpServer(nullptr)
+    , ui(new Ui::Dialog), tcpServer(10, true), httpServer()
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
+    // socks5 proxy must be checked
+    // http proxy relies on socks5 proxy
+    ui->checkBoxSocks->setEnabled(false);
     initTrayIcon();
     initServerTable();
     setUser(usertype);
-    readSettings();
     setState(false);
+    readSettings();
 
     if (usertype == ADMIN) {
 //        if (updateRoutes()) applyRoute();
@@ -50,7 +53,7 @@ void Dialog::closeEvent(QCloseEvent *event)
     }
     else if (button == QMessageBox::Yes) {
         event->accept();  //接受退出信号，程序退出
-        if (tcpServer) tcpServer->close();
+        if (tcpServer.isListening()) tcpServer.close();
         onQuit();
     } else {
         event->ignore();
@@ -104,18 +107,22 @@ void Dialog::initServerTable()
 
 void Dialog::setState(bool isStarted)
 {
+    qDebug() << "setState: " << isStarted;
     this->isStarted = isStarted;
     if (isStarted) {
         // server running
         ui->btnRun->setText("Stop");
-//        ui->lineEditIP->setEnabled(false);
-//        ui->spinBoxSocksPort->setEnabled(false);
-        mSystemTrayIcon->setToolTip(tr("Socks-Alice(Running)，listening at -- %0:%1").arg(addr.toString()).arg(port));
+        ui->lineEditIP->setEnabled(false);
+        ui->spinBoxSocksPort->setEnabled(false);
+        ui->checkBoxHttp->setEnabled(false);
+        mSystemTrayIcon->setToolTip(tr("Socks-Alice(Running)"));
     } else {
         // server stopped
         ui->btnRun->setText("Run");
-//        ui->lineEditIP->setEnabled(true);
-//        ui->spinBoxPort->setEnabled(true);
+        ui->lineEditIP->setEnabled(true);
+        ui->spinBoxSocksPort->setEnabled(true);
+        ui->spinBoxHttpPort->setEnabled(true);
+        ui->checkBoxHttp->setEnabled(true);
         mSystemTrayIcon->setToolTip(tr("Socks-Alice(Stopped)"));
     }
 }
@@ -142,6 +149,8 @@ void Dialog::readSettings()
     ui->lineEditIP->setText(settings.value("local/ip", "127.1").toString());
     ui->spinBoxSocksPort->setValue(settings.value("local/socks_port", 1081).toInt());
     ui->spinBoxHttpPort->setValue(settings.value("local/http_port", 1080).toInt());
+    bool http_check = settings.value("local/http_check", "true").toString() == "true";
+    ui->checkBoxHttp->setChecked(http_check);
 
     int size = settings.beginReadArray("servers");
     bool flag = true;
@@ -156,6 +165,7 @@ void Dialog::readSettings()
         ui->serverList->setItem(r, COL_PROXYPORT, new QTableWidgetItem(settings.value("proxy port").toString()));
         ui->serverList->setItem(r, COL_KEY, new QTableWidgetItem(settings.value("key").toString()));
         if (flag && settings.value("highlight").toString() == "true") {
+            qDebug() << "found highlight row in config";
             flag = false;
             setServer(r);
         }
@@ -172,6 +182,8 @@ void Dialog::writeSettings()
     settings.setValue("local/ip", ui->lineEditIP->text());
     settings.setValue("local/socks_port", ui->spinBoxSocksPort->value());
     settings.setValue("local/http_port", ui->spinBoxHttpPort->value());
+    bool http_check = ui->checkBoxHttp->isChecked();
+    settings.setValue("local/http_check", http_check ? "true" : "false");
 
     settings.beginWriteArray("servers");
     bool flag = true;
@@ -180,6 +192,7 @@ void Dialog::writeSettings()
         if (flag && ui->serverList->item(i, 0)->background().color() == Qt::green) {
             flag = false;
             settings.setValue("highlight", "true");
+            qDebug() << "highlight row set in config";
         } else {
             settings.setValue("highlight", "false");
         }
@@ -207,24 +220,26 @@ void Dialog::checkCurrentIndex(const QModelIndex &index)
     ui->actionTestLatency->setEnabled(valid);
     ui->actionEdit->setEnabled(valid && !connected);
     ui->actionDelete->setEnabled(valid && !connected);
-    ui->actionConnect->setEnabled(valid && !connected && !tcpServer);
+    ui->actionConnect->setEnabled(valid && !connected);
     ui->actionDisconnect->setEnabled(valid && connected);
 }
 
 void Dialog::setServer(int r)
 {
-    if (tcpServer) return; // please disconnect first
-    QString serverip = ui->serverList->item(r, COL_IP)->text();
-    quint16 serverport = ui->serverList->item(r, COL_PORT)->text().toUShort();
-    std::string method = ui->serverList->item(r, COL_METHOD)->text().toStdString();
-    std::string key = ui->serverList->item(r, COL_KEY)->text().toStdString();
-    QString proxyip = ui->serverList->item(r, COL_PROXYIP)->text();
-    quint16 proxyport = ui->serverList->item(r, COL_PROXYPORT)->text().toUShort();
-    tcpServer = new TcpServer(10, true, serverip, serverport, method, key, proxyip, proxyport);
+    cout << "setServer(int r)";
+    if (isStarted) return; // please disconnect first
+    m_serverAddr = QHostAddress(ui->serverList->item(r, COL_IP)->text());
+    m_serverPort = ui->serverList->item(r, COL_PORT)->text().toUShort();
+    m_method = ui->serverList->item(r, COL_METHOD)->text().toStdString();
+    m_password = ui->serverList->item(r, COL_KEY)->text().toStdString();
+    m_proxyAddr = QHostAddress(ui->serverList->item(r, COL_PROXYIP)->text());
+    m_proxyPort = ui->serverList->item(r, COL_PROXYPORT)->text().toUShort();
     bgBrush = ui->serverList->item(r, 0)->background();
     fgBrush = ui->serverList->item(r, 0)->foreground();
     ui->serverList->item(r, 0)->setBackground(Qt::green);
     ui->serverList->item(r, 0)->setForeground(Qt::black);
+    serverSet = true;
+    qDebug() << "serverSet true";
 }
 
 void Dialog::trayiconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -252,19 +267,33 @@ void Dialog::on_btnRun_clicked()
 {
     if (!isStarted) {
         // start server
-        addr = QHostAddress(ui->lineEditIP->text());
+        m_localAddr = QHostAddress(ui->lineEditIP->text());
 //        addr = QHostAddress("127.0.0.1");
-        port = ui->spinBoxSocksPort->value();
+        m_localPort = ui->spinBoxSocksPort->value();
 //        cout << "starting server @" << addr << port;
-        if (tcpServer && tcpServer->QTcpServer::listen(addr, port)) {
-            mSystemTrayIcon->showMessage(tr("Listening"), tr("listening at -- %0:%1").arg(addr.toString()).arg(port), QSystemTrayIcon::Information, 5000);
+        if (!serverSet) {
+            qDebug() << "please select a server first";
+            return;
+        }
+        if (tcpServer.listen(m_localAddr, m_localPort, m_serverAddr, m_serverPort, m_method, m_password, m_proxyAddr, m_proxyPort)) {
+            if (ui->checkBoxHttp->isChecked()) {
+                // share same port with socks5 proxy ? TODO
+                m_httpport = ui->spinBoxHttpPort->value();
+                if (!httpServer.httpListen(m_localAddr, m_httpport, m_localPort)) {
+                    tcpServer.close();
+                }
+            }
+        }
+        if (tcpServer.isListening()) {
+            mSystemTrayIcon->showMessage(tr("Listening"), tr("listening at -- %0:%1").arg(m_localAddr.toString()).arg(m_localPort), QSystemTrayIcon::Information, 3000);
             setState(true);
         } else {
-            mSystemTrayIcon->showMessage(tr("Run Failed"), tr("Please check your ip/port"), QSystemTrayIcon::Warning, 3000);
+            mSystemTrayIcon->showMessage(tr("Run Failed"), tr("Please check your socks port"), QSystemTrayIcon::Warning, 3000);
         }
     } else {
         // stop server
-        tcpServer->close();
+        tcpServer.close();
+        if (httpServer.isListening()) httpServer.close();
         setState(false);
     }
 }
@@ -282,6 +311,7 @@ void Dialog::onEdit()
     connect(editDlg, &EditDialog::finished, editDlg, &EditDialog::deleteLater);
     if (editDlg->exec()) {
 //            configHelper->save(*model);
+        writeSettings();
     }
 }
 
@@ -293,6 +323,7 @@ void Dialog::onAdd()
     connect(editDlg, &EditDialog::finished, editDlg, &EditDialog::deleteLater);
     if (editDlg->exec()) {
 //            configHelper->save(*model);
+        writeSettings();
     }
 }
 
@@ -306,6 +337,7 @@ void Dialog::onConnect()
 {
     int row = ui->serverList->currentRow();
     setServer(row);
+    cout << isStarted;
     if (!isStarted) on_btnRun_clicked();
 }
 
@@ -314,8 +346,6 @@ void Dialog::onDisconnect()
     int row = ui->serverList->currentRow();
     if (ui->serverList->item(row, COL_NAME)->background().color() == Qt::green) {
         if (isStarted) on_btnRun_clicked();
-        delete tcpServer;
-        tcpServer = nullptr;
         ui->serverList->item(row, COL_NAME)->setBackground(bgBrush);
         ui->serverList->item(row, COL_NAME)->setForeground(fgBrush);
     }

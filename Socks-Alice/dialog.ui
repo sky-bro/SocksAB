@@ -71,9 +71,12 @@
           <item row="1" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QCheckBox" name="checkBox">
+             <widget class="QCheckBox" name="checkBoxSocks">
               <property name="text">
                <string>Socks5代理</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -108,12 +111,12 @@
           <item row="2" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QCheckBox" name="checkBox_2">
+             <widget class="QCheckBox" name="checkBoxHttp">
               <property name="text">
                <string>HTTP代理</string>
               </property>
               <property name="checked">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
              </widget>
             </item>

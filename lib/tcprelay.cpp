@@ -36,6 +36,7 @@ bool TcpRelay::writeToRemote(const char *data, size_t length) {
 }
 
 void TcpRelay::onRemoteConnected() {
+  qDebug() << "remote connected, enter STREAM stage";
   m_stage = STREAM;
   if (!m_dataToWrite.empty()) {
     writeToRemote(m_dataToWrite.data(), m_dataToWrite.size());
@@ -56,9 +57,9 @@ void TcpRelay::onRemoteTcpSocketError() {
 void TcpRelay::onLocalTcpSocketError() {
   //it's not an "error" if remote host closed a connection
   if (m_local->error() != QAbstractSocket::RemoteHostClosedError) {
-    QDebug(QtMsgType::QtWarningMsg).noquote() << "Local socket:" << m_local->errorString();
+    QDebug(QtMsgType::QtWarningMsg).noquote() << "Local socket:" << m_local->errorString() << m_local->peerAddress() << m_local->peerPort();
   } else {
-    QDebug(QtMsgType::QtDebugMsg).noquote() << "Local socket:" << m_local->errorString();
+    QDebug(QtMsgType::QtDebugMsg).noquote() << "Local socket:" << m_local->errorString() << m_local->peerAddress() << m_local->peerPort();
   }
   close();
 }

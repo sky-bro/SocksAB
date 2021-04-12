@@ -13,6 +13,7 @@ TcpRelayClient::TcpRelayClient(QTcpSocket *localSocket, int timeout, QHostAddres
 }
 
 void TcpRelayClient::handleStageINIT(std::string &data) {
+  qDebug() << "TcpRelayClient::handleStageINIT";
   static constexpr const char reject_data [] = { 0, 91 };
   static constexpr const char accept_data [] = { 5, 0 };
   static const QByteArray reject(reject_data, 2);
@@ -21,7 +22,9 @@ void TcpRelayClient::handleStageINIT(std::string &data) {
     qCritical("An invalid socket connection was rejected. "
               "Please make sure the connection type is SOCKS5.");
     m_local->write(reject);
+    qDebug() << "socks init rejected";
   } else {
+    qDebug() << "socks init accepted";
     m_local->write(accept);
   }
   m_stage = ADDR;
@@ -44,6 +47,7 @@ void TcpRelayClient::handleStageADDR(std::string &data) {
     return;
   }
   if (cmd == 1) {// CMD_CONNECT
+    qDebug() << "SOCKS CMD_CONNECT";
     data = data.substr(3);
   } else {
     qCritical("Unknown command %d", cmd);
@@ -77,6 +81,7 @@ void TcpRelayClient::handleStageADDR(std::string &data) {
 }
 
 void TcpRelayClient::handleLocalTcpData(std::string &data) {
+    qDebug() << "TcpRelayClient::handleLocalTcpData";
   switch (m_stage) {
   case INIT:
     handleStageINIT(data);
@@ -99,5 +104,6 @@ void TcpRelayClient::handleLocalTcpData(std::string &data) {
 }
 
 void TcpRelayClient::handleRemoteTcpData(std::string &data) {
+    qDebug() << "TcpRelayClient::handleRemoteTcpData";
   data = m_cipher->dec(data);
 }

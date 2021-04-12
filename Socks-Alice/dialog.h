@@ -11,6 +11,7 @@
 #include <QMap>
 
 #include "tcpserver.h"
+#include "httpproxy.h"
 // #include <SocksAB/tcpserver.h>
 
 #define cout qDebug() << "(" << __TIME__ << __FILE__ << "," << __FUNCTION__ << "," << __LINE__ << "," << this << ")" << ": "
@@ -47,10 +48,21 @@ private:
     USERTYPE usertype;
     Ui::Dialog *ui;
     QSystemTrayIcon *mSystemTrayIcon;
-    TcpServer *tcpServer;
-    bool isStarted;
-    QHostAddress addr; // local addr
-    quint16 port; // local port
+    TcpServer tcpServer;
+    HttpProxy httpServer;
+    bool isStarted; // current state is running
+    bool serverSet = false;
+    // local and server config:
+    QHostAddress m_localAddr; // local addr
+    quint16 m_localPort; // local port
+    quint16 m_httpport;
+    QHostAddress m_serverAddr;
+    quint16 m_serverPort;
+    std::string m_method;
+    std::string m_password;
+    QHostAddress m_proxyAddr;
+    quint16 m_proxyPort;
+
     QBrush bgBrush;
     QBrush fgBrush;
     QMenu *menuConnection;

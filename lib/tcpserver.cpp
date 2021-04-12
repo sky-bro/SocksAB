@@ -3,22 +3,40 @@
 #include "tcprelayserver.h"
 #include <QTcpSocket>
 
-TcpServer::TcpServer(int timeout, bool isLocal, QHostAddress serverAddr, quint16 serverPort, std::string method, std::string password) :
-  m_timeout(timeout), m_isLocal(isLocal), m_serverAddr(serverAddr), m_serverPort(serverPort), m_password(password), m_method(method), m_proxyPort(0) {
+//TcpServer::TcpServer(int timeout, bool isLocal, QHostAddress serverAddr, quint16 serverPort, std::string method, std::string password) :
+//  m_timeout(timeout), m_isLocal(isLocal), m_serverAddr(serverAddr), m_serverPort(serverPort), m_password(password), m_method(method), m_proxyPort(0) {
+//    setMaxPendingConnections(FD_SETSIZE);
+//}
+
+//TcpServer::TcpServer(int timeout, bool isLocal, QString serverAddr, quint16 serverPort, std::string method, std::string password)
+//    : TcpServer(timeout, isLocal, QHostAddress(serverAddr), serverPort, method, password) {
+//}
+
+TcpServer::TcpServer(int timeout, bool isLocal) : m_timeout(timeout), m_isLocal(isLocal) {
     setMaxPendingConnections(FD_SETSIZE);
 }
 
-TcpServer::TcpServer(int timeout, bool isLocal, QString serverAddr, quint16 serverPort, std::string method, std::string password)
-    : TcpServer(timeout, isLocal, QHostAddress(serverAddr), serverPort, method, password) {
+bool TcpServer::listen(const QHostAddress &localAddr, quint16 localPort, const QHostAddress& serverAddr, quint16 serverPort, std::string method, std::string password, const QHostAddress& proxyAddr, quint16 proxyPort) {
+    // local: socks5 proxy and http proxy share same port
+    // TODO
+    m_serverAddr = serverAddr;
+    m_serverPort = serverPort;
+    m_password = password;
+    m_method = method;
+    m_proxyAddr = proxyAddr;
+    m_proxyPort = proxyPort;
+    qDebug() << "TcpServer::listen: " << m_serverAddr << m_serverPort << m_proxyAddr << m_proxyPort;
+
+    return QTcpServer::listen(localAddr, localPort);
 }
 
-TcpServer::TcpServer(int timeout, bool isLocal, QString serverAddr, quint16 serverPort, std::string method, std::string password, QString proxyAddr, quint16 proxyPort)
-    : m_timeout(timeout), m_isLocal(isLocal), m_serverAddr(serverAddr), m_serverPort(serverPort), m_password(password), m_method(method), m_proxyAddr(QHostAddress(proxyAddr)), m_proxyPort(proxyPort) {
-    setMaxPendingConnections(FD_SETSIZE);
-}
+bool TcpServer::listen(const QHostAddress &serverAddr, quint16 serverPort, std::string method, std::string password) {
+    m_serverAddr = serverAddr;
+    m_serverPort = serverPort;
+    m_method = method;
+    m_password = password;
 
-bool TcpServer::listen(QString localAddr, quint16 localPort) {
-  return QTcpServer::listen(QHostAddress(localAddr), localPort);
+    return QTcpServer::listen(m_serverAddr, m_serverPort);
 }
 
 TcpServer::~TcpServer() {

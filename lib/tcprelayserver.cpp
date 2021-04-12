@@ -29,13 +29,17 @@ void TcpRelayServer::handleStageADDR(std::string &data) {
     m_dataToWrite += data;
   }
   // no hostname for proxy for now...
-  if (proxy_addr.m_data.length())
+  if (proxy_addr.m_data.length()) {
     m_remote->setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, proxy_addr.m_addr.toString(), proxy_addr.m_port));
+    qDebug() << "set proxy: " << proxy_addr;
+  }
   if (address.m_addr_type == Address::HOST) m_remote->connectToHost(address.m_hostname, address.m_port);
   else m_remote->connectToHost(address.m_addr, address.m_port);
+  qDebug() << "m_remote state:" << m_remote->state();
 }
 
 void TcpRelayServer::handleLocalTcpData(std::string &data) {
+    qDebug() << "handleLocalTcpData()";
   try {
     data = m_cipher->dec(data);
   } catch (const std::exception &e) {
@@ -62,5 +66,6 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
 }
 
 void TcpRelayServer::handleRemoteTcpData(std::string &data) {
+   qDebug() << "handleRemoteTcpData()";
   data = m_cipher->enc(data);
 }
