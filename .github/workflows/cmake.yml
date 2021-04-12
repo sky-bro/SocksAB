@@ -72,12 +72,13 @@ jobs:
           path: botan-2.17.3/
           key: BotanCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
       - name: Linux - Compile Botan
-        if: matrix.platform == 'ubuntu-16.04' && steps.cache-botan.outputs.cache-hit != 'true'
+        if: matrix.platform == 'ubuntu-16.04'
+        # if: matrix.platform == 'ubuntu-16.04' && steps.cache-botan.outputs.cache-hit != 'true'
         run: |
           wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
           tar -xf 2.17.3.tar.gz
           cd botan-2.17.3/
-          python ./configure.py --prefix=/usr
+          python3.7 ./configure.py --prefix=/usr
           make -j`nproc`
 
       # - name: macOS - Compile Botan
@@ -92,7 +93,8 @@ jobs:
       #     sudo make -j`nproc`
 
       - name: Win - Compile Botan
-        if: matrix.platform == 'windows-latest' && steps.cache-botan.outputs.cache-hit != 'true'
+        if: matrix.platform == 'windows-latest'
+        # if: matrix.platform == 'windows-latest' && steps.cache-botan.outputs.cache-hit != 'true'
         run: |
           curl -OL https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
           tar -xf 2.17.3.tar.gz
