@@ -3,11 +3,11 @@
 #include "editdialog.h"
 #include <QSettings>
 
-
 Dialog::Dialog(QWidget *parent, USERTYPE usertype)
     : QDialog(parent)
     , ui(new Ui::Dialog), tcpServer(10, true), httpServer()
 {
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     // socks5 proxy must be checked

@@ -3,6 +3,7 @@
 #include "tcpserver.h"
 
 int main(int argc, char *argv[]) {
+  QNetworkProxyFactory::setUseSystemConfiguration(false);
   QCoreApplication a(argc, argv);
   QCommandLineParser parser;
   parser.addHelpOption();
