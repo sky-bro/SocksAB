@@ -114,6 +114,7 @@ void Dialog::setState(bool isStarted)
         ui->btnRun->setText("Stop");
         ui->lineEditIP->setEnabled(false);
         ui->spinBoxSocksPort->setEnabled(false);
+        ui->spinBoxHttpPort->setEnabled(false);
         ui->checkBoxHttp->setEnabled(false);
         mSystemTrayIcon->setToolTip(tr("Socks-Alice(Running)"));
     } else {
