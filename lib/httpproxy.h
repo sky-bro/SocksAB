@@ -4,6 +4,8 @@
 #include <QTcpServer>
 #include <QNetworkProxy>
 
+#define FD_SETSIZE 1024
+
 class HttpProxy: public QTcpServer
 {
     Q_OBJECT

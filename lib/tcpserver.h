@@ -6,6 +6,8 @@
 #include "tcprelay.h"
 #include <QSet>
 
+#define FD_SETSIZE 1024
+
 class TcpServer : public QTcpServer
 {
     Q_OBJECT
