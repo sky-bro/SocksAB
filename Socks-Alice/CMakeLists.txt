@@ -40,8 +40,8 @@ if(WIN32)
             COMMAND ${Qt5_DIR}/../../../bin/windeployqt ${CMAKE_CURRENT_BINARY_DIR}/Socks-Alice.exe --compiler-runtime --verbose 2 --dir ${CMAKE_CURRENT_BINARY_DIR}/winqt-alice/
             COMMAND ${CMAKE_COMMAND} -E copy ${Botan_LIBRARY}/../../bin/botan.dll ${CMAKE_CURRENT_BINARY_DIR}/winqt-alice/
             )
+        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/winqt-alice/ DESTINATION alice)
     endif()
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/winqt-alice/ DESTINATION alice)
 endif()
 
 if(APPLE)
