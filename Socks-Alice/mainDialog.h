@@ -1,32 +1,33 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QDialog>
-#include <QSystemTrayIcon>
-#include <QMessageBox>
 #include <QCloseEvent>
-#include <QMenu>
 #include <QCoreApplication>
+#include <QDialog>
 #include <QHostAddress>
 #include <QMap>
+#include <QMenu>
+#include <QMessageBox>
+#include <QSystemTrayIcon>
 
-#include "tcpserver.h"
 #include "httpproxy.h"
-// #include <SocksAB/tcpserver.h>
+#include "tcpserver.h"
 
-#define cout qDebug() << "(" << __TIME__ << __FILE__ << "," << __FUNCTION__ << "," << __LINE__ << "," << this << ")" << ": "
+#define cout                                                              \
+    qDebug() << "(" << __TIME__ << __FILE__ << "," << __FUNCTION__ << "," \
+             << __LINE__ << "," << this << ")"                            \
+             << ": "
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class Dialog; }
-QT_END_NAMESPACE
+// QT_BEGIN_NAMESPACE
+namespace Ui {
+class MainDialog;
+}
+// QT_END_NAMESPACE
 
-enum USERTYPE {
-    ADMIN,
-    USER
-};
+enum USERTYPE { ADMIN, USER, VISITOR };
 
 enum COLTYPE {
-    COL_NAME=0,
+    COL_NAME = 0,
     COL_IP,
     COL_PORT,
     COL_METHOD,
@@ -35,26 +36,27 @@ enum COLTYPE {
     COL_KEY
 };
 
-class Dialog : public QDialog
-{
+class MainDialog : public QDialog {
     Q_OBJECT
 
-public:
-    Dialog(QWidget *parent = nullptr, USERTYPE usertype=USER);
-    ~Dialog();
-    virtual  void closeEvent(QCloseEvent *event);
+  public:
+    MainDialog(QWidget *parent = nullptr);
+    ~MainDialog();
+    virtual void closeEvent(QCloseEvent *event);
+    void setUser(USERTYPE usertype);
 
-private:
-    USERTYPE usertype;
-    Ui::Dialog *ui;
+  private:
+    USERTYPE usertype = VISITOR;
+    Ui::MainDialog *ui;
     QSystemTrayIcon *mSystemTrayIcon;
     TcpServer tcpServer;
     HttpProxy httpServer;
-    bool isStarted; // current state is running
+    bool isStarted;  // current state is running
+    // a server is set / connected
     bool serverSet = false;
     // local and server config:
-    QHostAddress m_localAddr; // local addr
-    quint16 m_localPort; // local port
+    QHostAddress m_localAddr;  // local addr
+    quint16 m_localPort;       // local port
     quint16 m_httpport;
     QHostAddress m_serverAddr;
     quint16 m_serverPort;
@@ -63,6 +65,9 @@ private:
     QHostAddress m_proxyAddr;
     quint16 m_proxyPort;
 
+    QSystemTrayIcon::ActivationReason m_reason;
+    QTimer *m_pTimer = nullptr;
+
     QBrush bgBrush;
     QBrush fgBrush;
     QMenu *menuConnection;
@@ -70,18 +75,18 @@ private:
     void initTrayIcon();
     void initServerTable();
     void setState(bool isStarted);
-    void setUser(USERTYPE usertype);
+
     void readSettings();
     void writeSettings();
     void checkCurrentIndex(const QModelIndex &index);
     void setServer(int r);
 
-private slots:
+  private slots:
     void trayiconActivated(QSystemTrayIcon::ActivationReason reason);
     void show_hide();
     void on_btnRun_clicked();
-//    void on_btnApply_clicked();
-//    void on_btnUpdate_clicked();
+    //    void on_btnApply_clicked();
+    //    void on_btnUpdate_clicked();
     void onCustomContextMenuRequested(const QPoint &pos);
     void onEdit();
     void onAdd();
@@ -92,4 +97,4 @@ private slots:
     void onTestAllLatency();
     void onQuit();
 };
-#endif // DIALOG_H
+#endif  // DIALOG_H

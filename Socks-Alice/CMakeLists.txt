@@ -1,14 +1,14 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(SOURCE
-    dialog.cpp
-    dialog.h
-    dialog.ui
-    logindialog.cpp
-    logindialog.h
-    logindialog.ui
-    editdialog.cpp
-    editdialog.h
-    editdialog.ui
+    mainDialog.cpp
+    mainDialog.h
+    mainDialog.ui
+    loginDialog.cpp
+    loginDialog.h
+    loginDialog.ui
+    serverEditDialog.cpp
+    serverEditDialog.h
+    serverEditDialog.ui
     main.cpp)
 qt_add_resources(SOURCE res.qrc)
 

@@ -8,7 +8,7 @@
 
 ### 手动编译安装
 
-首先需要安装[botan](https://github.com/randombit/botan)库，我前使用的是2.17.3版本
+首先需要安装[botan](https://github.com/randombit/botan)库，我使用的是2.17.3版本
 
 使用下面命令编译安装，其实自己只是测试运行一下安装没有什么必要，要安装直接下release版本的就行
 

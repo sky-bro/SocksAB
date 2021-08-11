@@ -1,6 +1,9 @@
 name: CMake
 
 on:
+  push:
+    tags:
+      - v*
   release:
     types: [published]
   workflow_dispatch:
@@ -16,7 +19,7 @@ jobs:
     strategy:
       matrix:
         qt_version: [5.15.0]
-        platform: [ubuntu-16.04, macos-latest, windows-latest]
+        platform: [ubuntu-18.04, macos-latest, windows-latest]
         arch: [x64]
         include:
           - platform: windows-latest
@@ -72,8 +75,8 @@ jobs:
           path: botan-2.17.3/
           key: BotanCache-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.qt_version }}
       - name: Linux - Compile Botan
-        if: matrix.platform == 'ubuntu-16.04'
-        # if: matrix.platform == 'ubuntu-16.04' && steps.cache-botan.outputs.cache-hit != 'true'
+        if: matrix.platform == 'ubuntu-18.04'
+        # if: matrix.platform == 'ubuntu-18.04' && steps.cache-botan.outputs.cache-hit != 'true'
         run: |
           wget -c https://github.com/randombit/botan/archive/refs/tags/2.17.3.tar.gz
           tar -xf 2.17.3.tar.gz
@@ -104,7 +107,7 @@ jobs:
           nmake check
 
       - name: Linux - ${{ matrix.qt_version }} - Build preparation - Install Packages
-        if: matrix.platform == 'ubuntu-16.04'
+        if: matrix.platform == 'ubuntu-18.04'
         run: |
           # sudo add-apt-repository ppa:webispy/grpc
           # sudo add-apt-repository ppa:carsten-uppenbrink-net/openssl
@@ -184,7 +187,7 @@ jobs:
           # ls * -R
       # --------------------------------------------------------
       - name: Linux - ${{ matrix.qt_version }} - Generate Dependencies and Build
-        if: matrix.platform == 'ubuntu-16.04'
+        if: matrix.platform == 'ubuntu-18.04'
         shell: bash
         env:
           CC: /usr/bin/gcc-7
@@ -197,7 +200,7 @@ jobs:
           cmake --install .
       # ========================================================================================================= Deployments
       - name: Linux - ${{ matrix.qt_version }} - Generating AppImage
-        if: matrix.platform == 'ubuntu-16.04'
+        if: matrix.platform == 'ubuntu-18.04'
         run: |
           cd build
           wget https://github.com/probonopd/linuxdeployqt/releases/download/6/linuxdeployqt-6-x86_64.AppImage
@@ -222,20 +225,20 @@ jobs:
           rm AppDir/usr/share/applications/Socks-Bob.desktop
           rm AppDir2/usr/bin/Socks-Alice
           rm AppDir2/usr/share/applications/Socks-Alice.desktop
-          squashfs-root/AppRun AppDir/usr/share/applications/Socks-Alice.desktop -appimage -no-strip -always-overwrite
-          squashfs-root/AppRun AppDir2/usr/share/applications/Socks-Bob.desktop -appimage -no-strip -always-overwrite
+          squashfs-root/AppRun AppDir/usr/share/applications/Socks-Alice.desktop -appimage -no-strip -always-overwrite -unsupported-allow-new-glibc
+          squashfs-root/AppRun AppDir2/usr/share/applications/Socks-Bob.desktop -appimage -no-strip -always-overwrite -unsupported-allow-new-glibc
           # ls * -R
           mv ./Socks-Alice*.AppImage ./Socks-Alice.AppImage
           mv ./Socks-Bob*.AppImage ./Socks-Bob.AppImage
       # - name: Linux - ${{ matrix.qt_version }} - Uploading artifact
-      #   if: matrix.platform == 'ubuntu-16.04'
+      #   if: matrix.platform == 'ubuntu-18.04'
       #   uses: actions/upload-artifact@master
       #   with:
       #     name: Qv2ray-${{ github.sha }}.linux-${{ matrix.arch }}.qt${{ matrix.qt_version }}.AppImage
       #     path: build/Qv2ray.AppImage
       - name: Linux - ${{ matrix.qt_version }} - Upload Socks-Alice to release
         uses: svenstaro/upload-release-action@v1-release
-        if: github.event_name == 'release' && matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
+        if: matrix.platform == 'ubuntu-18.04' && matrix.qt_version == '5.15.0'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/Socks-Alice.AppImage
@@ -244,7 +247,7 @@ jobs:
           overwrite: true
       - name: Linux - ${{ matrix.qt_version }} - Upload Socks-Bob to release
         uses: svenstaro/upload-release-action@v1-release
-        if: github.event_name == 'release' && matrix.platform == 'ubuntu-16.04' && matrix.qt_version == '5.15.0'
+        if: matrix.platform == 'ubuntu-18.04' && matrix.qt_version == '5.15.0'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/Socks-Bob.AppImage
@@ -260,7 +263,7 @@ jobs:
       #     path: Qv2ray.dmg
       - name: macOS - ${{ matrix.qt_version }} - Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
-        if: github.event_name == 'release' && matrix.platform == 'macos-latest' && matrix.qt_version == '5.15.0'
+        if: matrix.platform == 'macos-latest' && matrix.qt_version == '5.15.0'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: Socks-Alice.dmg
@@ -282,7 +285,7 @@ jobs:
       #     path: release-alice.7z
       - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
-        if: github.event_name == 'release' && matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
+        if: matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: release-alice.7z
@@ -303,7 +306,7 @@ jobs:
       #     path: release-alice.7z
       - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
-        if: github.event_name == 'release' && matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
+        if: matrix.platform == 'windows-latest' && matrix.qt_version == '5.15.0'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: release-bob.7z

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EditDialog</class>
- <widget class="QDialog" name="EditDialog">
+ <class>ServerEditDialog</class>
+ <widget class="QDialog" name="ServerEditDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Edit Server</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -169,7 +169,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>EditDialog</receiver>
+   <receiver>ServerEditDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -185,7 +185,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>EditDialog</receiver>
+   <receiver>ServerEditDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
