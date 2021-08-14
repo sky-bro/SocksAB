@@ -1,32 +1,32 @@
 #ifndef HTTPPROXY_H
 #define HTTPPROXY_H
 
-#include <QTcpServer>
 #include <QNetworkProxy>
+#include <QTcpServer>
 
 #define FD_SETSIZE 1024
 
-class HttpProxy: public QTcpServer
-{
+class HttpProxy : public QTcpServer {
     Q_OBJECT
-public:
+  public:
     HttpProxy();
 
     /**
      * setProxy for this tcpserver: use local socks server
      */
-    bool httpListen(const QHostAddress &http_addr, uint16_t http_port, uint16_t socks_port);
+    bool httpListen(const QHostAddress &http_addr, uint16_t http_port,
+                    uint16_t socks_port);
 
-protected:
+  protected:
     /**
      * local_socket(fd) <--> remote_socket (setproxy(localhost:socks_port))
      */
     void incomingConnection(qintptr fd);
 
-private:
+  private:
     QNetworkProxy socksProxy;
 
-private slots:
+  private slots:
     void onLocalSocketError(QAbstractSocket::SocketError);
     void onRemoteSocketError(QAbstractSocket::SocketError);
     /**
@@ -40,4 +40,4 @@ private slots:
     void onRemoteReadyRead();
 };
 
-#endif // HTTPPROXY_H
+#endif  // HTTPPROXY_H

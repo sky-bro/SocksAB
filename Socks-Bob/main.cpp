@@ -1,42 +1,48 @@
-#include <QCoreApplication>
 #include <QCommandLineParser>
+#include <QCoreApplication>
+
 #include "tcpserver.h"
 
 int main(int argc, char *argv[]) {
-  QNetworkProxyFactory::setUseSystemConfiguration(false);
-  QCoreApplication a(argc, argv);
-  QCommandLineParser parser;
-  parser.addHelpOption();
-  parser.addOptions({
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
+    QCoreApplication a(argc, argv);
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addOptions({
         {{"i", "ip"},
-            QCoreApplication::translate("main", "ip address of Socks-Bob"),
-            QCoreApplication::translate("main", "ip")},
+         QCoreApplication::translate("main", "ip address of Socks-Bob"),
+         QCoreApplication::translate("main", "ip")},
         {{"p", "port"},
-            QCoreApplication::translate("main", "port of Socks-Bob"),
-            QCoreApplication::translate("main", "port")},
+         QCoreApplication::translate("main", "port of Socks-Bob"),
+         QCoreApplication::translate("main", "port")},
         {{"k", "key"},
-            QCoreApplication::translate("main", "shared secret between Alice and Bob"),
-            QCoreApplication::translate("main", "key")},
-     });
-  parser.process(a);
-  QString str_ip = parser.value("ip"), str_port = parser.value("port"), str_key = parser.value("key");
-  if (str_ip.isEmpty()) str_ip = "0.0.0.0";
-  if (str_port.isEmpty()) str_port = "1082";
-  if (str_key.isEmpty()) str_key = "sky-io";
-  QHostAddress serverAddr(str_ip);
-  quint16 serverPort  = str_port.toUShort();
-  QString method = "chacha20-ietf-poly1305";
-  method = "aes-128-gcm";
-  method = "aes-128-ctr";
-  // std::string password = str_key.toStdString();
-  TcpServer tcpserver(30, false);
+         QCoreApplication::translate("main",
+                                     "shared secret between Alice and Bob"),
+         QCoreApplication::translate("main", "key")},
+    });
+    parser.process(a);
+    QString str_ip = parser.value("ip"), str_port = parser.value("port"),
+            str_key = parser.value("key");
+    if (str_ip.isEmpty()) str_ip = "0.0.0.0";
+    if (str_port.isEmpty()) str_port = "1082";
+    if (str_key.isEmpty()) str_key = "sky-io";
+    QHostAddress serverAddr(str_ip);
+    quint16 serverPort = str_port.toUShort();
+    QString method = "chacha20-ietf-poly1305";
+    method = "aes-128-gcm";
+    method = "aes-128-ctr";
+    // std::string password = str_key.toStdString();
+    TcpServer tcpserver(30, false);
 
-  if (tcpserver.listen(serverAddr, serverPort, method.toStdString(), str_key.toStdString())) {
-      qDebug("hello from Bob (Server Side), listening at %s:%d", qUtf8Printable(tcpserver.serverAddress().toString()), tcpserver.serverPort());
-  } else {
-      qDebug() << "fail to listen at" << (str_ip + ":" + str_port);
-      return 1;
-  }
+    if (tcpserver.listen(serverAddr, serverPort, method.toStdString(),
+                         str_key.toStdString())) {
+        qDebug("hello from Bob (Server Side), listening at %s:%d",
+               qUtf8Printable(tcpserver.serverAddress().toString()),
+               tcpserver.serverPort());
+    } else {
+        qDebug() << "fail to listen at" << (str_ip + ":" + str_port);
+        return 1;
+    }
 
-  return a.exec();
+    return a.exec();
 }

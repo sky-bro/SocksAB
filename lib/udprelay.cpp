@@ -1,6 +1,3 @@
 #include "udprelay.h"
 
-UdpRelay::UdpRelay()
-{
-
-}
+UdpRelay::UdpRelay() {}

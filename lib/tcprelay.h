@@ -1,56 +1,56 @@
 #ifndef TCPRELAY_H
 #define TCPRELAY_H
 
-#include <QObject>
-#include <QTcpSocket>
-#include "cipher.h"
-#include <QTimer>
 #include <QHostAddress>
 #include <QNetworkProxy>
+#include <QObject>
+#include <QTcpSocket>
+#include <QTimer>
 
-class TcpRelay: public QObject {
-  Q_OBJECT
- public:
-  TcpRelay(QTcpSocket *localSocket, int timeout, QHostAddress server_addr, quint16 server_port, Cipher::CipherCreator get_cipher);
-  virtual ~TcpRelay() {
-    qInfo() << "TcpRelay destroyed";
-  }
+#include "cipher.h"
 
-  enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
+class TcpRelay : public QObject {
+    Q_OBJECT
+  public:
+    TcpRelay(QTcpSocket *localSocket, int timeout, QHostAddress server_addr,
+             quint16 server_port, Cipher::CipherCreator get_cipher);
+    virtual ~TcpRelay() { qInfo() << "TcpRelay destroyed"; }
 
- signals:
-  void finished();
+    enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 
- protected:
-  static const int64_t RemoteRecvSize = 65536;
-  STAGE m_stage;
-  std::string m_dataToWrite;
-  QHostAddress m_serverAddr; // server bob's addr
-  quint16 m_serverPort;
-  QHostAddress m_remoteAddr; // real server addr
-  std::unique_ptr<Cipher> m_cipher;
-  std::unique_ptr<QTcpSocket> m_local;
-  std::unique_ptr<QTcpSocket> m_remote;
-  std::unique_ptr<QTimer> m_timer;
+  signals:
+    void finished();
 
-  bool writeToRemote(const char *data, size_t length);
+  protected:
+    static const int64_t RemoteRecvSize = 65536;
+    STAGE m_stage;
+    std::string m_dataToWrite;
+    QHostAddress m_serverAddr;  // server bob's addr
+    quint16 m_serverPort;
+    QHostAddress m_remoteAddr;  // real server addr
+    std::unique_ptr<Cipher> m_cipher;
+    std::unique_ptr<QTcpSocket> m_local;
+    std::unique_ptr<QTcpSocket> m_remote;
+    std::unique_ptr<QTimer> m_timer;
 
-//  virtual void handleStageAddr(std::string &data) = 0;
-  virtual void handleLocalTcpData(std::string &data) = 0;
-  virtual void handleRemoteTcpData(std::string &data) = 0;
+    bool writeToRemote(const char *data, size_t length);
 
- protected slots:
-  void onRemoteConnected();
+    //  virtual void handleStageAddr(std::string &data) = 0;
+    virtual void handleLocalTcpData(std::string &data) = 0;
+    virtual void handleRemoteTcpData(std::string &data) = 0;
 
-  void onRemoteTcpSocketError();
-  void onLocalTcpSocketError();
+  protected slots:
+    void onRemoteConnected();
 
-  void onLocalTcpSocketReadyRead();
-  void onRemoteTcpSocketReadyRead();
+    void onRemoteTcpSocketError();
+    void onLocalTcpSocketError();
 
-  void onTimeout();
+    void onLocalTcpSocketReadyRead();
+    void onRemoteTcpSocketReadyRead();
 
-  void close();
+    void onTimeout();
+
+    void close();
 };
 
-#endif // TCPRELAY_H
+#endif  // TCPRELAY_H
