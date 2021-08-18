@@ -15,6 +15,7 @@ class TcpRelayClient : public TcpRelay {
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher, QHostAddress proxy_addr,
                    quint16 proxy_port);
+    ~TcpRelayClient();
 
   private:
     void handleStageINIT(std::string &data);

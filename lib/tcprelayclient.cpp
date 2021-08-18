@@ -19,9 +19,10 @@ TcpRelayClient::TcpRelayClient(QTcpSocket *localSocket, int timeout,
     qInfo("TcpRelayClient Constructed!");
 }
 
+TcpRelayClient::~TcpRelayClient() { qInfo("TcpRelayClient Destructed!"); }
+
 void TcpRelayClient::handleStageINIT(std::string &data) {
-    qInfo() << "handleStageINIT";
-    qDebug() << QByteArray(data.data());
+    qDebug() << "handleStageINIT" << QByteArray(data.data(), data.size());
     static constexpr const char reject_data[] = {0, 91};
     static constexpr const char accept_data[] = {5, 0};
     static const QByteArray reject(reject_data, 2);
@@ -31,10 +32,10 @@ void TcpRelayClient::handleStageINIT(std::string &data) {
             "An invalid socket connection was rejected. "
             "Please make sure the connection type is SOCKS5.");
         m_local->write(reject);
-        qInfo() << "socks init rejected";
+        qDebug() << "socks init rejected";
     } else {
         m_local->write(accept);
-        qInfo() << "socks init accepted";
+        qDebug() << "socks init accepted";
     }
     m_stage = ADDR;
 }
@@ -43,11 +44,10 @@ void TcpRelayClient::handleStageINIT(std::string &data) {
  * send addr to remote server (Bob)
  */
 void TcpRelayClient::handleStageADDR(std::string &data) {
-    qInfo() << "handleStageADDR";
-    qDebug() << QByteArray(data.data());
+    qDebug() << "handleStageADDR:" << QByteArray(data.data(), data.size());
     auto cmd = static_cast<int>(data.at(1));
     if (cmd == 3) {  // CMD_UDP_ASSOCIATE
-        qInfo("SOCKS5 CMD: UDP associate");
+        qDebug("SOCKS5 CMD: UDP associate");
         static const char header_data[] = {5, 0, 0};
         QHostAddress addr = m_local->localAddress();
         uint16_t port = m_local->localPort();
@@ -58,7 +58,7 @@ void TcpRelayClient::handleStageADDR(std::string &data) {
         return;
     }
     if (cmd == 1) {  // CMD_CONNECT
-        qInfo() << "SOCKS5 CMD: CONNECT";
+        qDebug("SOCKS5 CMD: CONNECT");
         data = data.substr(3);
     } else {
         qWarning("Unknown command %d", cmd);
@@ -74,8 +74,9 @@ void TcpRelayClient::handleStageADDR(std::string &data) {
         return;
     }
 
-    qInfo() << "Connecting" << address << "from"
-            << m_local->peerAddress().toString() + ":" + m_local->peerPort();
+    qDebug().noquote() << "Connecting" << address << "from"
+                       << m_local->peerAddress().toString() + ":" +
+                              QString::number(m_local->peerPort());
 
     //  m_stage = DNS;
     m_stage = CONNECTING;
@@ -103,12 +104,13 @@ void TcpRelayClient::handleLocalTcpData(std::string &data) {
         case CONNECTING:
         case DNS:
             // 存数据，直到连接成功再发
-            qInfo() << "still CONNECTING, saving data for later";
-            qDebug() << QByteArray(data.data());
+            qDebug() << "still CONNECTING, saving new data for later:"
+                     << QByteArray(data.data(), data.size());
             m_dataToWrite += m_cipher->enc(data);
             break;
         case STREAM:
-            qDebug() << "STREAMING data:" << QByteArray(data.data());
+            qDebug() << "STREAMING data:"
+                     << QByteArray(data.data(), data.size());
             data = m_cipher->enc(data);
             writeToRemote(data.data(), data.size());
             break;
@@ -119,6 +121,6 @@ void TcpRelayClient::handleLocalTcpData(std::string &data) {
 
 void TcpRelayClient::handleRemoteTcpData(std::string &data) {
     data = m_cipher->dec(data);
-    qInfo() << "TcpRelayClient::handleRemoteTcpData, after decryption";
-    qDebug() << QByteArray(data.data());
+    qDebug() << ":handleRemoteTcpData, after decryption:"
+             << QByteArray(data.data(), data.size());
 }

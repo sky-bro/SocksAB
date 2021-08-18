@@ -25,9 +25,11 @@ class Address {
 
     friend QDebug operator<<(QDebug os, const Address &address) {
         if (address.m_addr_type == IPV4 || address.m_addr_type == IPV6) {
-            return os << address.m_addr << ":" << address.m_port;
+            return os << address.m_addr.toString() + ":" +
+                             QString::number(address.m_port);
         } else if (address.m_addr_type == HOST) {
-            return os << address.m_hostname << ":" << address.m_port;
+            return os << address.m_hostname + ":" +
+                             QString::number(address.m_port);
         }
         return os << "NOADDR";
     }

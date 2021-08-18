@@ -35,7 +35,8 @@ bool Address::update_from_ip_port(QHostAddress addr, quint16 port) {
 }
 
 int Address::update_from_data(const std::string &data) {
-    qInfo() << "parsing address from data:" << QByteArray(data.data());
+    qDebug() << "parsing address from data:"
+             << QByteArray(data.data(), data.size());
     int t_addr_type = data[0];
     if (t_addr_type == IPV4) {
         // ATYPE | IPV4 | PORT
@@ -46,7 +47,8 @@ int Address::update_from_data(const std::string &data) {
                 *reinterpret_cast<const uint16_t *>(data.data() + 5));
             m_addr_type = IPV4;
             m_data = data.substr(0, 7);
-            qInfo() << "IPV4: " << m_addr << ":" << m_port;
+            qDebug() << "IPV4:"
+                     << m_addr.toString() + ":" + QString::number(m_port);
             return 7;
         }
     } else if (t_addr_type == IPV6) {
@@ -57,7 +59,8 @@ int Address::update_from_data(const std::string &data) {
                 *reinterpret_cast<const uint16_t *>(data.data() + 17));
             m_addr_type = IPV6;
             m_data = data.substr(0, 19);
-            qInfo() << "IPV6: " << m_addr << ":" << m_port;
+            qDebug() << "IPV6:"
+                     << m_addr.toString() + ":" + QString::number(m_port);
             return 19;
         }
     } else if (t_addr_type == HOST) {
@@ -68,9 +71,11 @@ int Address::update_from_data(const std::string &data) {
                 m_port = qFromBigEndian(*reinterpret_cast<const uint16_t *>(
                     data.data() + 2 + hostname_len));
                 m_hostname = QString(data.substr(2, hostname_len).data());
-                qInfo() << "hostname_len: " << hostname_len
-                        << ", m_hostname: " << m_hostname
-                        << ", m_port: " << m_port;
+                qDebug().noquote()
+                    << QString("hostname_len: %0, hostname: %1, port: %2")
+                           .arg(hostname_len)
+                           .arg(m_hostname)
+                           .arg(m_port);
                 m_addr_type = HOST;
                 m_data = data.substr(0, 4 + hostname_len);
                 return 4 + hostname_len;

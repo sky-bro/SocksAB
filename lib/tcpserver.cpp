@@ -8,6 +8,12 @@
 TcpServer::TcpServer(int timeout, bool isLocal)
     : m_timeout(timeout), m_isLocal(isLocal) {
     setMaxPendingConnections(FD_SETSIZE);
+    qInfo() << "TcpServer Constructed!";
+}
+
+TcpServer::~TcpServer() {
+    if (isListening()) close();
+    qInfo("TcpServer destructed!");
 }
 
 bool TcpServer::listen(const QHostAddress& localAddr, quint16 localPort,
@@ -20,8 +26,9 @@ bool TcpServer::listen(const QHostAddress& localAddr, quint16 localPort,
     m_method = method;
     m_proxyAddr = proxyAddr;
     m_proxyPort = proxyPort;
-    qInfo() << "TcpServer::listen: " << m_serverAddr << m_serverPort
-            << m_proxyAddr << m_proxyPort;
+    qInfo() << "listening at -"
+            << m_serverAddr.toString() + ":" + QString::number(m_serverPort)
+            << m_proxyAddr.toString() + ":" + QString::number(m_proxyPort);
 
     return QTcpServer::listen(localAddr, localPort);
 }
@@ -33,12 +40,10 @@ bool TcpServer::listen(const QHostAddress& serverAddr, quint16 serverPort,
     m_method = method;
     m_password = password;
 
-    return QTcpServer::listen(m_serverAddr, m_serverPort);
-}
+    qInfo() << "listening at -"
+            << m_serverAddr.toString() + ":" + QString::number(m_serverPort);
 
-TcpServer::~TcpServer() {
-    if (isListening()) close();
-    qInfo("TcpServer destructed!");
+    return QTcpServer::listen(m_serverAddr, m_serverPort);
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) {
@@ -46,25 +51,26 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) {
     localSocket->setSocketDescriptor(socketDescriptor);
     QHostAddress peerAddress = localSocket->peerAddress();
     quint16 peerPort = localSocket->peerPort();
-    qInfo() << "New connection from" << peerAddress.toString() + ":" + peerPort;
+    qInfo() << "New connection from"
+            << peerAddress.toString() + ":" + QString::number(peerPort);
     // timeout * 1000: convert sec to msec
-    TcpRelay* con;
+    TcpRelay* tcpRelay;
     if (m_isLocal) {
-        con = new TcpRelayClient(
+        tcpRelay = new TcpRelayClient(
             localSocket, m_timeout * 1000, m_serverAddr, m_serverPort,
             [this]() { return std::make_unique<Cipher>(m_method, m_password); },
             m_proxyAddr, m_proxyPort);
     } else {
-        con = new TcpRelayServer(localSocket, m_timeout * 1000, m_serverAddr,
-                                 m_serverPort, [this]() {
-                                     return std::make_unique<Cipher>(
-                                         m_method, m_password);
-                                 });
+        tcpRelay = new TcpRelayServer(localSocket, m_timeout * 1000,
+                                      m_serverAddr, m_serverPort, [this]() {
+                                          return std::make_unique<Cipher>(
+                                              m_method, m_password);
+                                      });
     }
-    m_conSet.emplace_back(con);
-    connect(con, &TcpRelay::finished, this, [con, this]() {
-        qInfo() << "con removed from m_conSet";
-        m_conSet.remove(con);
-        con->deleteLater();
+    m_tcpRelays.emplace_back(tcpRelay);
+    connect(tcpRelay, &TcpRelay::finished, this, [tcpRelay, this]() {
+        qInfo() << "tcprelay removed from m_conSet";
+        m_tcpRelays.remove(tcpRelay);
+        tcpRelay->deleteLater();
     });
 }

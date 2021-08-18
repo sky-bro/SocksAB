@@ -15,6 +15,8 @@ set(SOURCE
     tcpserver.cpp
     udprelay.h
     udprelay.cpp
+    log.h
+    log.cpp
     )
 
 add_library(socksAB ${SOURCE})

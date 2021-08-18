@@ -48,7 +48,7 @@ class TcpServer : public QTcpServer {
     QHostAddress m_proxyAddr;
     quint16 m_proxyPort;
 
-    std::list<TcpRelay*> m_conSet;
+    std::list<TcpRelay*> m_tcpRelays;
 };
 
 #endif  // TCPSERVER_H

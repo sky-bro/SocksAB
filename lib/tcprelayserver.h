@@ -12,6 +12,7 @@ class TcpRelayServer : public TcpRelay {
     TcpRelayServer(QTcpSocket *localSocket, int timeout,
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher);
+    ~TcpRelayServer();
 
   private:
     void handleStageADDR(std::string &data);

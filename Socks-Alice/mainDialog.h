@@ -13,11 +13,6 @@
 #include "httpproxy.h"
 #include "tcpserver.h"
 
-#define cout                                                              \
-    qDebug() << "(" << __TIME__ << __FILE__ << "," << __FUNCTION__ << "," \
-             << __LINE__ << "," << this << ")"                            \
-             << ": "
-
 // QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainDialog;

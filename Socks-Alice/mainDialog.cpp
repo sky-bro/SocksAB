@@ -194,7 +194,7 @@ void MainDialog::writeSettings() {
     }
     settings.endArray();
 
-    cout << "settings written to " << settings.fileName();
+    qInfo() << "settings written to" << settings.fileName();
 }
 
 void MainDialog::checkCurrentIndex(const QModelIndex &index) {
@@ -213,7 +213,6 @@ void MainDialog::checkCurrentIndex(const QModelIndex &index) {
 }
 
 void MainDialog::setServer(int r) {
-    cout << "setServer(int r)";
     if (isStarted) return;  // please disconnect first
     m_serverAddr = QHostAddress(ui->serverList->item(r, COL_IP)->text());
     m_serverPort = ui->serverList->item(r, COL_PORT)->text().toUShort();
@@ -350,7 +349,6 @@ void MainDialog::onDelete() {
 void MainDialog::onConnect() {
     int row = ui->serverList->currentRow();
     setServer(row);
-    cout << isStarted;
     if (!isStarted) on_btnRun_clicked();
 }
 
