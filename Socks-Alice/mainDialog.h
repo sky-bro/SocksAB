@@ -43,7 +43,6 @@ class MainDialog : public QDialog {
     MainDialog(QWidget *parent = nullptr);
     ~MainDialog();
     virtual void closeEvent(QCloseEvent *event);
-    void setUser(USERTYPE usertype);
 
   private:
     USERTYPE usertype = VISITOR;
@@ -52,7 +51,7 @@ class MainDialog : public QDialog {
     TcpServer tcpServer;
     HttpProxy httpServer;
     bool isStarted;  // current state is running
-    // a server is set / connected
+    // a server is set
     bool serverSet = false;
     // local and server config:
     QHostAddress m_localAddr;  // local addr
@@ -81,6 +80,8 @@ class MainDialog : public QDialog {
     void checkCurrentIndex(const QModelIndex &index);
     void setServer(int r);
 
+  public slots:
+    void setUser(USERTYPE usertype);
   private slots:
     void trayiconActivated(QSystemTrayIcon::ActivationReason reason);
     void show_hide();

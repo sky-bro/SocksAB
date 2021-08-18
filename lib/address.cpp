@@ -35,9 +35,10 @@ bool Address::update_from_ip_port(QHostAddress addr, quint16 port) {
 }
 
 int Address::update_from_data(const std::string &data) {
-    qInfo() << "update_from_data:" << QByteArray(data.data());
+    qInfo() << "parsing address from data:" << QByteArray(data.data());
     int t_addr_type = data[0];
     if (t_addr_type == IPV4) {
+        // ATYPE | IPV4 | PORT
         if (data.length() >= 7) {
             m_addr.setAddress(qFromBigEndian(
                 *reinterpret_cast<const quint32 *>(data.data() + 1)));

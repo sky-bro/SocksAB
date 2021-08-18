@@ -9,7 +9,7 @@
 
 #include "cipher.h"
 
-class TcpRelay : public QObject {
+class TcpRelay : public QObject, public QEnableSharedFromThis<TcpRelay> {
     Q_OBJECT
   public:
     TcpRelay(QTcpSocket *localSocket, int timeout, QHostAddress server_addr,
@@ -29,8 +29,8 @@ class TcpRelay : public QObject {
     quint16 m_serverPort;
     QHostAddress m_remoteAddr;  // real server addr
     std::unique_ptr<Cipher> m_cipher;
-    std::unique_ptr<QTcpSocket> m_local;
-    std::unique_ptr<QTcpSocket> m_remote;
+    QTcpSocket *m_local;
+    QTcpSocket *m_remote;
     std::unique_ptr<QTimer> m_timer;
 
     bool writeToRemote(const char *data, size_t length);

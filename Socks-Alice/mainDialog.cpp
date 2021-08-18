@@ -108,6 +108,7 @@ void MainDialog::setUser(USERTYPE usertype) {
     index = usertype == ADMIN ? 1 : 2;
     ui->tabWidget->setTabVisible(index, false);
     mSystemTrayIcon->show();
+    show();
 }
 
 void MainDialog::readSettings() {
@@ -265,11 +266,10 @@ void MainDialog::on_btnRun_clicked() {
     if (!isStarted) {
         // start server
         m_localAddr = QHostAddress(ui->lineEditIP->text());
-        //        addr = QHostAddress("127.0.0.1");
         m_localPort = ui->spinBoxSocksPort->value();
-        //        cout << "starting server @" << addr << port;
         if (!serverSet) {
-            qWarning() << "please select a server first";
+            QMessageBox::warning(this, "server is not set",
+                                 "please select a server first");
             return;
         }
         if (tcpServer.listen(m_localAddr, m_localPort, m_serverAddr,
@@ -277,6 +277,7 @@ void MainDialog::on_btnRun_clicked() {
                              m_proxyPort)) {
             if (ui->checkBoxHttp->isChecked()) {
                 // share same port with socks5 proxy ? TODO
+                // unnecessary
                 m_httpport = ui->spinBoxHttpPort->value();
                 if (!httpServer.httpListen(m_localAddr, m_httpport,
                                            m_localPort)) {
@@ -293,7 +294,7 @@ void MainDialog::on_btnRun_clicked() {
             setState(true);
         } else {
             mSystemTrayIcon->showMessage(tr("Run Failed"),
-                                         tr("Please check your socks port"),
+                                         tr("Please check your ip/port"),
                                          QSystemTrayIcon::Warning, 3000);
         }
     } else {

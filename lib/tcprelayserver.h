@@ -1,6 +1,8 @@
 #ifndef TCPRELAYSERVER_H
 #define TCPRELAYSERVER_H
 
+#include <memory>
+
 #include "tcprelay.h"
 
 class TcpRelayServer : public TcpRelay {

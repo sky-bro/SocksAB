@@ -35,17 +35,16 @@ void TcpRelayServer::handleStageADDR(std::string &data) {
         m_remote->setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy,
                                          proxy_addr.m_addr.toString(),
                                          proxy_addr.m_port));
-        qDebug() << "set proxy: " << proxy_addr;
+        qInfo() << "set proxy: " << proxy_addr;
     }
     if (address.m_addr_type == Address::HOST)
         m_remote->connectToHost(address.m_hostname, address.m_port);
     else
         m_remote->connectToHost(address.m_addr, address.m_port);
-    qDebug() << "m_remote state:" << m_remote->state();
 }
 
 void TcpRelayServer::handleLocalTcpData(std::string &data) {
-    qDebug() << "handleLocalTcpData()";
+    qInfo() << "handleLocalTcpData";
     try {
         data = m_cipher->dec(data);
     } catch (const std::exception &e) {
@@ -58,11 +57,13 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
         qWarning("Data is empty after decryption.");
         return;
     }
+    qDebug() << QByteArray(data.data());
 
     if (m_stage == STREAM) {
         writeToRemote(data.data(), data.size());
     } else if (m_stage == CONNECTING || m_stage == DNS) {
         // take DNS into account, otherwise some data will get lost
+        qInfo("still CONNECTING, save data for later");
         m_dataToWrite += data;
     } else if (m_stage == INIT) {
         handleStageADDR(data);
@@ -72,6 +73,7 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
 }
 
 void TcpRelayServer::handleRemoteTcpData(std::string &data) {
-    qDebug() << "handleRemoteTcpData()";
+    qInfo() << "TcpRelayClient::handleRemoteTcpData, before encryption";
+    qDebug() << QByteArray(data.data());
     data = m_cipher->enc(data);
 }

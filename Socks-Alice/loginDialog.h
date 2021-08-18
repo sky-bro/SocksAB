@@ -16,11 +16,11 @@ class LoginDialog : public QDialog {
     explicit LoginDialog(QWidget *parent = nullptr);
     ~LoginDialog();
 
-  private slots:
-    void on_btnLogin_clicked();
-
   signals:
     void loginSuccess(USERTYPE usertype);
+
+  private slots:
+    void on_btnLogin_clicked();
 
   private:
     Ui::LoginDialog *ui;

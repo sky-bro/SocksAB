@@ -62,7 +62,7 @@ make
 Socks-Bob是我们的服务端，它是一个命令行程序，`-h`查看参数说明
 
 ```shell
-❯ ./Socks-Bob/Socks-Bob -h
+> ./Socks-Bob/Socks-Bob -h
 Usage: ./Socks-Bob/Socks-Bob [options]
 
 Options:

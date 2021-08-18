@@ -51,9 +51,6 @@ int main(int argc, char *argv[]) {
     loginDialog.show();
     MainDialog mainDialog;
     QObject::connect(&loginDialog, &LoginDialog::loginSuccess, &mainDialog,
-                     [&](USERTYPE usertype) {
-                         mainDialog.setUser(usertype);
-                         mainDialog.show();
-                     });
+                     &MainDialog::setUser);
     return a.exec();
 }

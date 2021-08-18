@@ -24,13 +24,13 @@ class TcpServer : public QTcpServer {
      */
     TcpServer(int timeout, bool isLocal);
     // TODO: add config type
-    // alice listen
+    // alice (client) listen
     bool listen(const QHostAddress& localAddr, quint16 localPort,
                 const QHostAddress& serverAddr, quint16 serverPort,
                 std::string method, std::string password,
                 const QHostAddress& proxyAddr = QHostAddress::Any,
                 quint16 proxyPort = 0);
-    // bob listen
+    // bob (server) listen
     bool listen(const QHostAddress& serverAddr, quint16 serverPort,
                 std::string method, std::string password);
     ~TcpServer() override;

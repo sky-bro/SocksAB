@@ -1,6 +1,6 @@
 #include "tcprelay.h"
 
-TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout,
+TcpRelay::TcpRelay(QTcpSocket* localSocket, int timeout,
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher)
     : m_stage(INIT),
@@ -13,22 +13,22 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout,
     m_timer->setInterval(timeout);
     connect(m_timer.get(), &QTimer::timeout, this, &TcpRelay::onTimeout);
 
-    connect(m_local.get(), &QAbstractSocket::errorOccurred, this,
+    connect(m_local, &QAbstractSocket::errorOccurred, this,
             &TcpRelay::onLocalTcpSocketError);
-    connect(m_local.get(), &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(m_local.get(), &QTcpSocket::readyRead, this,
+    connect(m_local, &QTcpSocket::disconnected, this, &TcpRelay::close);
+    connect(m_local, &QTcpSocket::readyRead, this,
             &TcpRelay::onLocalTcpSocketReadyRead);
-    connect(m_local.get(), &QTcpSocket::readyRead, m_timer.get(),
+    connect(m_local, &QTcpSocket::readyRead, m_timer.get(),
             static_cast<void (QTimer::*)()>(&QTimer::start));
 
-    connect(m_remote.get(), &QTcpSocket::connected, this,
+    connect(m_remote, &QTcpSocket::connected, this,
             &TcpRelay::onRemoteConnected);
-    connect(m_remote.get(), &QAbstractSocket::errorOccurred, this,
+    connect(m_remote, &QAbstractSocket::errorOccurred, this,
             &TcpRelay::onRemoteTcpSocketError);
-    connect(m_remote.get(), &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(m_remote.get(), &QTcpSocket::readyRead, this,
+    connect(m_remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
+    connect(m_remote, &QTcpSocket::readyRead, this,
             &TcpRelay::onRemoteTcpSocketReadyRead);
-    connect(m_remote.get(), &QTcpSocket::readyRead, m_timer.get(),
+    connect(m_remote, &QTcpSocket::readyRead, m_timer.get(),
             static_cast<void (QTimer::*)()>(&QTimer::start));
 
     m_local->setReadBufferSize(RemoteRecvSize);
@@ -39,20 +39,22 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout,
     m_remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
-bool TcpRelay::writeToRemote(const char *data, size_t length) {
+bool TcpRelay::writeToRemote(const char* data, size_t length) {
     return m_remote->write(data, length) != -1;
 }
 
 void TcpRelay::onRemoteConnected() {
-    qDebug() << "remote connected, enter STREAM stage";
-    m_stage = STREAM;
+    qInfo() << "remote connected, enter STREAM stage";
     if (!m_dataToWrite.empty()) {
+        qInfo() << "writing saved data to remote";
         writeToRemote(m_dataToWrite.data(), m_dataToWrite.size());
         m_dataToWrite.clear();
     }
+    m_stage = STREAM;
 }
 
 void TcpRelay::onRemoteTcpSocketError() {
+    qInfo() << "onRemoteTcpSocketError";
     // it's not an "error" if remote host closed a connection
     if (m_remote->error() != QAbstractSocket::RemoteHostClosedError) {
         QDebug(QtMsgType::QtWarningMsg).noquote()
@@ -61,11 +63,13 @@ void TcpRelay::onRemoteTcpSocketError() {
         QDebug(QtMsgType::QtDebugMsg).noquote()
             << "Remote socket:" << m_remote->errorString();
     }
+    m_local->waitForBytesWritten();
     close();
 }
 
 void TcpRelay::onLocalTcpSocketError() {
     // it's not an "error" if remote host closed a connection
+    qInfo() << "onLocalTcpSocketError";
     if (m_local->error() != QAbstractSocket::RemoteHostClosedError) {
         QDebug(QtMsgType::QtWarningMsg).noquote()
             << "Local socket:" << m_local->errorString()
@@ -75,6 +79,7 @@ void TcpRelay::onLocalTcpSocketError() {
             << "Local socket:" << m_local->errorString()
             << m_local->peerAddress() << m_local->peerPort();
     }
+    m_remote->waitForBytesWritten();
     close();
 }
 
@@ -83,14 +88,15 @@ void TcpRelay::onLocalTcpSocketReadyRead() {
     data.resize(RemoteRecvSize);
     int64_t readSize = m_local->read(&data[0], data.size());
     if (readSize == -1) {
-        qCritical("Attempted to read from closed local socket.");
+        qWarning("Attempted to read from closed local socket, but failed.");
         close();
         return;
     }
     data.resize(readSize);
 
     if (data.empty()) {
-        qCritical("Local received empty data.");
+        qWarning(
+            "Attempted to read from closed local socket, but got nothing.");
         close();
         return;
     }
@@ -98,30 +104,33 @@ void TcpRelay::onLocalTcpSocketReadyRead() {
 }
 
 void TcpRelay::onRemoteTcpSocketReadyRead() {
-    std::string buf;
-    buf.resize(RemoteRecvSize);
-    int64_t readSize = m_remote->read(&buf[0], buf.size());
+    std::string data;
+    data.resize(RemoteRecvSize);
+    int64_t readSize = m_remote->read(&data[0], data.size());
     if (readSize == -1) {
-        qCritical("Attempted to read from closed remote socket.");
+        qWarning("Attempted to read from closed remote socket.");
         close();
         return;
     }
-    buf.resize(readSize);
+    data.resize(readSize);
 
-    if (buf.empty()) {
-        qWarning("Remote received empty data.");
+    if (data.empty()) {
+        // 什么时候会出现这种情况
+        qWarning("received empty data from remote");
         close();
         return;
     }
 
-    try {
-        handleRemoteTcpData(buf);
-    } catch (const std::exception &e) {
-        QDebug(QtMsgType::QtCriticalMsg) << "Remote:" << e.what();
-        close();
-        return;
-    }
-    m_local->write(buf.data(), buf.size());
+    qInfo("Got remote data");
+    qDebug() << QByteArray(data.data());
+    //    try {
+    handleRemoteTcpData(data);
+    //    } catch (const std::exception &e) {
+    //        QDebug(QtMsgType::QtCriticalMsg) << "Remote:" << e.what();
+    //        close();
+    //        return;
+    //    }
+    m_local->write(data.data(), data.size());
 }
 
 void TcpRelay::onTimeout() {
@@ -131,12 +140,14 @@ void TcpRelay::onTimeout() {
 
 void TcpRelay::close() {
     if (m_stage == DESTROYED) {
-        qWarning("already destroyed");
+        qInfo("already destroyed");
         return;
     }
     // m_remote->setProxy(QNetworkProxy::NoProxy); // useless
-    m_local->close();
-    m_remote->close();
+    m_remote->deleteLater();
+    m_local->deleteLater();
+    //    m_local->close();
+    //    m_remote->close();
     m_stage = DESTROYED;
     emit finished();
 }
