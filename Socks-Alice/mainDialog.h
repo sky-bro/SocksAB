@@ -21,6 +21,7 @@ class MainDialog;
 
 enum USERTYPE { ADMIN, USER, VISITOR };
 
+extern int COL_COUNT;
 enum COLTYPE {
     COL_NAME = 0,
     COL_IP,
@@ -30,6 +31,8 @@ enum COLTYPE {
     COL_PROXYPORT,
     COL_KEY
 };
+
+extern QString columns[];
 
 class MainDialog : public QDialog {
     Q_OBJECT
@@ -75,6 +78,10 @@ class MainDialog : public QDialog {
     void checkCurrentIndex(const QModelIndex &index);
     void setServer(int r);
 
+    bool isValidConfig(const QJsonObject &config);
+    QJsonObject getServerConfig(int r);
+    void updateServerConfig(int r, const QJsonObject &config);
+
   public slots:
     void setUser(USERTYPE usertype);
   private slots:
@@ -87,6 +94,10 @@ class MainDialog : public QDialog {
     void onEdit();
     void onAdd();
     void onDelete();
+    // from clipboard
+    void onImport();
+    // to clipboard
+    void onExport();
     void onConnect();
     void onDisconnect();
     void onTestLatency();

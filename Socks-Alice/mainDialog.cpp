@@ -1,10 +1,17 @@
 #include "mainDialog.h"
 
+#include <QClipboard>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSettings>
 
 #include "loginDialog.h"
 #include "serverEditDialog.h"
 #include "ui_mainDialog.h"
+
+int COL_COUNT = 7;
+QString columns[] = {"name",    "ip",        "port", "method",
+                     "proxyIp", "proxyPort", "key"};
 
 MainDialog::MainDialog(QWidget *parent)
     : QDialog(parent),
@@ -65,6 +72,8 @@ void MainDialog::initServerTable() {
     menuConnection = new QMenu(this);
     menuConnection->addAction(ui->actionAdd);
     menuConnection->addAction(ui->actionEdit);
+    menuConnection->addAction(ui->actionImport);
+    menuConnection->addAction(ui->actionExport);
     menuConnection->addAction(ui->actionDelete);
     menuConnection->addAction(ui->actionConnect);
     menuConnection->addAction(ui->actionDisconnect);
@@ -72,6 +81,8 @@ void MainDialog::initServerTable() {
     //    menuConnection->addAction(ui->actionTestAllLatency);
     connect(ui->actionAdd, &QAction::triggered, this, &MainDialog::onAdd);
     connect(ui->actionEdit, &QAction::triggered, this, &MainDialog::onEdit);
+    connect(ui->actionImport, &QAction::triggered, this, &MainDialog::onImport);
+    connect(ui->actionExport, &QAction::triggered, this, &MainDialog::onExport);
     connect(ui->actionDelete, &QAction::triggered, this, &MainDialog::onDelete);
     connect(ui->actionConnect, &QAction::triggered, this,
             &MainDialog::onConnect);
@@ -207,6 +218,7 @@ void MainDialog::checkCurrentIndex(const QModelIndex &index) {
     }
     ui->actionTestLatency->setEnabled(valid);
     ui->actionEdit->setEnabled(valid && !connected);
+    ui->actionExport->setEnabled(valid);
     ui->actionDelete->setEnabled(valid && !connected);
     ui->actionConnect->setEnabled(!serverSet);
     ui->actionDisconnect->setEnabled(valid && connected);
@@ -220,12 +232,41 @@ void MainDialog::setServer(int r) {
     m_password = ui->serverList->item(r, COL_KEY)->text().toStdString();
     m_proxyAddr = QHostAddress(ui->serverList->item(r, COL_PROXYIP)->text());
     m_proxyPort = ui->serverList->item(r, COL_PROXYPORT)->text().toUShort();
-    bgBrush = ui->serverList->item(r, 0)->background();
-    fgBrush = ui->serverList->item(r, 0)->foreground();
+    bgBrush = ui->serverList->item(r, COL_NAME)->background();
+    fgBrush = ui->serverList->item(r, COL_NAME)->foreground();
     ui->serverList->item(r, 0)->setBackground(Qt::green);
     ui->serverList->item(r, 0)->setForeground(Qt::black);
     serverSet = true;
     qDebug() << "serverSet true";
+}
+
+bool MainDialog::isValidConfig(const QJsonObject &config) {
+    for (int i = 0; i < COL_COUNT; ++i) {
+        if (!config.contains(columns[i])) return false;
+    }
+    return true;
+}
+
+QJsonObject MainDialog::getServerConfig(int r) {
+    QJsonObject config;
+    for (int i = 0; i < COL_COUNT; ++i) {
+        if (i == COL_PORT || i == COL_PROXYPORT)
+            config.insert(columns[i],
+                          ui->serverList->item(r, i)->text().toUShort());
+        else
+            config.insert(columns[i], ui->serverList->item(r, i)->text());
+    }
+    return config;
+}
+
+void MainDialog::updateServerConfig(int r, const QJsonObject &config) {
+    for (int i = 0; i < COL_COUNT; ++i) {
+        if (i == COL_PORT || i == COL_PROXYPORT)
+            ui->serverList->item(r, i)->setText(
+                QString::number(config[columns[i]].toInt()));
+        else
+            ui->serverList->item(r, i)->setText(config[columns[i]].toString());
+    }
 }
 
 void MainDialog::trayiconActivated(QSystemTrayIcon::ActivationReason reason) {
@@ -344,6 +385,33 @@ void MainDialog::onDelete() {
     if (button == QMessageBox::Yes) {
         ui->serverList->removeRow(row);
     }
+}
+
+void MainDialog::onImport() {
+    QClipboard *clipboard = QApplication::clipboard();
+    QJsonDocument configDoc = QJsonDocument::fromJson(QByteArray::fromBase64(
+        clipboard->text().toUtf8(), QByteArray::Base64Encoding));
+    qInfo() << "configDoc: " << configDoc.toJson();
+    QJsonObject config = configDoc.object();
+    if (!isValidConfig(config)) return;
+
+    // 插入新行
+    int row = ui->serverList->rowCount();
+    ui->serverList->insertRow(row);
+    for (int i = 0; i < COL_COUNT; ++i) {
+        ui->serverList->setItem(row, i, new QTableWidgetItem());
+    }
+    updateServerConfig(row, config);
+}
+
+void MainDialog::onExport() {
+    int row = ui->serverList->currentRow();
+    QJsonObject config = getServerConfig(row);
+    QJsonDocument configDoc(config);
+    QString configB64Str = configDoc.toJson(QJsonDocument::Compact).toBase64();
+    qInfo() << "exported config:" << configB64Str;
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(configB64Str);
 }
 
 void MainDialog::onConnect() {

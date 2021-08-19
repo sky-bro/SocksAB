@@ -38,22 +38,18 @@ void ServerEditDialog::save() {
     if (r >= serverList->rowCount()) {
         r = serverList->rowCount();
         serverList->insertRow(r);
-        qDebug() << "inserted th row: " << serverList->rowCount() << r;
+        for (int i = 0; i < COL_COUNT; ++i) {
+            serverList->setItem(r, i, new QTableWidgetItem());
+        }
+        qInfo() << "insert a new row:" << serverList->rowCount();
     }
-    serverList->setItem(r, COL_NAME,
-                        new QTableWidgetItem(ui->lineEditName->text()));
-    serverList->setItem(r, COL_IP,
-                        new QTableWidgetItem(ui->lineEditServerAddr->text()));
-    serverList->setItem(r, COL_PORT,
-                        new QTableWidgetItem(ui->spinBoxServerPort->text()));
-    serverList->setItem(
-        r, COL_METHOD, new QTableWidgetItem(ui->comboBoxMethod->currentText()));
-    serverList->setItem(r, COL_PROXYIP,
-                        new QTableWidgetItem(ui->lineEditProxyAddr->text()));
-    serverList->setItem(r, COL_PROXYPORT,
-                        new QTableWidgetItem(ui->spinBoxProxyPort->text()));
-    serverList->setItem(r, COL_KEY,
-                        new QTableWidgetItem(ui->lineEditKey->text()));
-    qDebug() << "saved!";
+    serverList->item(r, COL_NAME)->setText(ui->lineEditName->text());
+    serverList->item(r, COL_IP)->setText(ui->lineEditServerAddr->text());
+    serverList->item(r, COL_PORT)->setText(ui->spinBoxServerPort->text());
+    serverList->item(r, COL_METHOD)->setText(ui->comboBoxMethod->currentText());
+    serverList->item(r, COL_PROXYIP)->setText(ui->lineEditProxyAddr->text());
+    serverList->item(r, COL_PROXYPORT)->setText(ui->spinBoxProxyPort->text());
+    serverList->item(r, COL_KEY)->setText(ui->lineEditKey->text());
+    qInfo() << "edit server successfully!";
     this->accept();
 }
