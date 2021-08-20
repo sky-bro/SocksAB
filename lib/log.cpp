@@ -1,6 +1,6 @@
 #include "log.h"
 
-int logLevel = 4;
+int logLevel = 1;
 FILE *logFile = stderr;
 
 void messageHandler(QtMsgType type, const QMessageLogContext &context,

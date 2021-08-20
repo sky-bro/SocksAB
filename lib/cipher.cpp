@@ -2,45 +2,41 @@
 
 const std::string Cipher::kdfLabel = {"get-subkey"};
 
-const std::unordered_map<std::string, Cipher::CipherInfo>
-    Cipher::cipherInfoMap = {
-        {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
-        {"aes-192-cfb", {"AES-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
-        {"aes-256-cfb", {"AES-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
-        {"aes-128-ctr", {"AES-128/CTR-BE", 16, 16, Cipher::CipherType::STREAM}},
-        {"aes-192-ctr", {"AES-192/CTR-BE", 24, 16, Cipher::CipherType::STREAM}},
-        {"aes-256-ctr", {"AES-256/CTR-BE", 32, 16, Cipher::CipherType::STREAM}},
-        {"bf-cfb", {"Blowfish/CFB", 16, 8, Cipher::CipherType::STREAM}},
-        {"camellia-128-cfb",
-         {"Camellia-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
-        {"camellia-192-cfb",
-         {"Camellia-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
-        {"camellia-256-cfb",
-         {"Camellia-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
-        {"cast5-cfb", {"CAST-128/CFB", 16, 8, Cipher::CipherType::STREAM}},
-        {"chacha20", {"ChaCha", 32, 8, Cipher::CipherType::STREAM}},
-        {"chacha20-ietf", {"ChaCha", 32, 12, Cipher::CipherType::STREAM}},
-        {"des-cfb", {"DES/CFB", 8, 8, Cipher::CipherType::STREAM}},
-        {"idea-cfb", {"IDEA/CFB", 16, 8, Cipher::CipherType::STREAM}},
-        //#ifndef USE_BOTAN2
-        //    // RC2 is not supported by botan-2
-        //    {"rc2-cfb", {"RC2/CFB", 16, 8, Cipher::CipherType::STREAM}},
-        //#endif
-        {"rc4-md5", {"RC4-MD5", 16, 16, Cipher::CipherType::STREAM}},
-        {"salsa20", {"Salsa20", 32, 8, Cipher::CipherType::STREAM}},
-        {"seed-cfb", {"SEED/CFB", 16, 16, Cipher::CipherType::STREAM}},
-        {"serpent-256-cfb", {"Serpent/CFB", 32, 16, Cipher::CipherType::STREAM}}
-        //#ifdef USE_BOTAN2
-        ,
-        {"chacha20-ietf-poly1305",
-         {"ChaCha20Poly1305", 32, 12, Cipher::CipherType::AEAD, 32, 16}},
-        {"aes-128-gcm",
-         {"AES-128/GCM", 16, 12, Cipher::CipherType::AEAD, 16, 16}},
-        {"aes-192-gcm",
-         {"AES-192/GCM", 24, 12, Cipher::CipherType::AEAD, 24, 16}},
-        {"aes-256-gcm",
-         {"AES-256/GCM", 32, 12, Cipher::CipherType::AEAD, 32, 16}}
-        //#endif
+const std::map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
+    {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
+    {"aes-192-cfb", {"AES-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
+    {"aes-256-cfb", {"AES-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
+    {"aes-128-ctr", {"AES-128/CTR-BE", 16, 16, Cipher::CipherType::STREAM}},
+    {"aes-192-ctr", {"AES-192/CTR-BE", 24, 16, Cipher::CipherType::STREAM}},
+    {"aes-256-ctr", {"AES-256/CTR-BE", 32, 16, Cipher::CipherType::STREAM}},
+    {"bf-cfb", {"Blowfish/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    {"camellia-128-cfb",
+     {"Camellia-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
+    {"camellia-192-cfb",
+     {"Camellia-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
+    {"camellia-256-cfb",
+     {"Camellia-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
+    {"cast5-cfb", {"CAST-128/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    {"chacha20", {"ChaCha", 32, 8, Cipher::CipherType::STREAM}},
+    {"chacha20-ietf", {"ChaCha", 32, 12, Cipher::CipherType::STREAM}},
+    {"des-cfb", {"DES/CFB", 8, 8, Cipher::CipherType::STREAM}},
+    {"idea-cfb", {"IDEA/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    //#ifndef USE_BOTAN2
+    //    // RC2 is not supported by botan-2
+    //    {"rc2-cfb", {"RC2/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    //#endif
+    //        {"rc4-md5", {"RC4-MD5", 16, 16, Cipher::CipherType::STREAM}},
+    {"salsa20", {"Salsa20", 32, 8, Cipher::CipherType::STREAM}},
+    {"seed-cfb", {"SEED/CFB", 16, 16, Cipher::CipherType::STREAM}},
+    {"serpent-256-cfb", {"Serpent/CFB", 32, 16, Cipher::CipherType::STREAM}}
+    //#ifdef USE_BOTAN2
+    ,
+    {"chacha20-ietf-poly1305",
+     {"ChaCha20Poly1305", 32, 12, Cipher::CipherType::AEAD, 32, 16}},
+    {"aes-128-gcm", {"AES-128/GCM", 16, 12, Cipher::CipherType::AEAD, 16, 16}},
+    {"aes-192-gcm", {"AES-192/GCM", 24, 12, Cipher::CipherType::AEAD, 24, 16}},
+    {"aes-256-gcm", {"AES-256/GCM", 32, 12, Cipher::CipherType::AEAD, 32, 16}}
+    //#endif
 };
 
 std::string Cipher::randomIv(int length) {
@@ -77,13 +73,6 @@ void Cipher::incrementIv(Botan::Keyed_Filter *m_filter, std::string &m_iv) {
         reinterpret_cast<const Botan::byte *>(m_iv.data()), m_iv.size()));
 }
 
-std::string Cipher::md5Hash(const std::string &in) {
-    Botan::MD5 md5;
-    Botan::secure_vector<Botan::byte> result = md5.process(in);
-    return std::string(reinterpret_cast<const char *>(result.data()),
-                       result.size());
-}
-
 std::string Cipher::deriveAeadSubkey(size_t length,
                                      const std::string &masterKey,
                                      const std::string &salt) {
@@ -100,7 +89,7 @@ std::string Cipher::deriveAeadSubkey(size_t length,
 Cipher::Cipher(const std::string method, const std::string password)
     : m_method(method),
       m_cipherInfo(Cipher::cipherInfoMap.at(m_method)),
-      m_key(evpBytesToKey(m_cipherInfo, password)) {}
+      m_key(password2key(m_cipherInfo, password)) {}
 
 std::string Cipher::update(const std::string &data,
                            std::shared_ptr<Botan::Pipe> m_pipe) {
@@ -119,7 +108,7 @@ std::string Cipher::update(const char *data, size_t length,
     throw std::logic_error("Underlying ciphers are all uninitialised!");
 }
 
-std::string Cipher::enc(std::string &data) {
+std::string Cipher::enc(const std::string &data) {
     return enc(data.data(), data.size());
 }
 
@@ -128,12 +117,12 @@ std::string Cipher::enc(const char *data, size_t length) {
         return std::string();
     }
 
-    std::string header;
+    // salt: aead ciphers
+    // iv: stream ciphers
+    std::string encrypted = "";
     if (!m_pipe_enc) {
-        initEnc(header);
+        initEnc(encrypted);
     }
-
-    std::string encrypted;
     if (m_cipherInfo.type == Cipher::CipherType::AEAD) {
         uint16_t inLen =
             length > AEAD_CHUNK_SIZE_MASK ? AEAD_CHUNK_SIZE_MASK : length;
@@ -144,18 +133,18 @@ std::string Cipher::enc(const char *data, size_t length) {
         std::string encPayload =
             update(data, inLen, m_pipe_enc);  // payload + tag
         incrementIv(m_filter_enc, m_iv_enc);
-        encrypted = encLength + encPayload;
+        encrypted += encLength + encPayload;
         if (inLen < length) {
             // Append the remaining part recursively if there is any
             encrypted += enc(data + inLen, length - inLen);
         }
     } else {
-        encrypted = update(data, length, m_pipe_enc);
+        encrypted += update(data, length, m_pipe_enc);
     }
-    return header + encrypted;
+    return encrypted;
 }
 
-std::string Cipher::dec(std::string &data) {
+std::string Cipher::dec(const std::string &data) {
     return dec(data.data(), data.size());
 }
 
@@ -164,30 +153,39 @@ std::string Cipher::dec(const char *data, size_t length) {
         return std::string();
     }
 
-    std::string out;
+    std::string out = "";
+    std::string chunk;
     if (!m_pipe_dec) {
+        if (!m_incompleteChunk.empty()) {
+            chunk = m_incompleteChunk + std::string(data, length);
+            data = chunk.data();
+            length = chunk.length();
+        }
         size_t headerLength = 0;
-        initDec(reinterpret_cast<const char *>(data), length, headerLength);
+        if (!initDec(reinterpret_cast<const char *>(data), length,
+                     headerLength)) {
+            m_incompleteChunk = std::string(data, length);
+            qDebug() << "initDec failed, wait for more data";
+            return out;
+        }
+        qDebug() << "initDec success!" << headerLength << m_cipherInfo.saltLen;
+        m_incompleteChunk.clear();
         data += headerLength;
         length -= headerLength;
     }
 
     if (m_cipherInfo.type == Cipher::CipherType::AEAD) {
         // Concatenate the data with incomplete chunk (if it exists)
-        std::string chunk =
-            m_incompleteChunk +
-            std::string(reinterpret_cast<const char *>(data), length);
-        data = chunk.data();
-        length = chunk.length();
+        if (!m_incompleteChunk.empty()) {
+            chunk = m_incompleteChunk +
+                    std::string(reinterpret_cast<const char *>(data), length);
+            data = chunk.data();
+            length = chunk.length();
+            m_incompleteChunk.clear();
+        }
         const char *dataEnd = data + length;
 
-        uint16_t payloadLength = 0;
-        if (m_incompleteLength != 0u) {
-            // The payload length is already known
-            payloadLength = m_incompleteLength;
-            m_incompleteLength = 0;
-            m_incompleteChunk.clear();
-        } else {
+        if (payloadLength == 0u) {
             if (dataEnd - data < AEAD_CHUNK_SIZE_LEN + m_cipherInfo.tagLen) {
                 qDebug("AEAD data chunk is incomplete (too small for length)");
                 m_incompleteChunk = std::string(
@@ -210,12 +208,12 @@ std::string Cipher::dec(const char *data, size_t length) {
             qDebug("AEAD data chunk is incomplete (too small for payload)");
             m_incompleteChunk = std::string(
                 reinterpret_cast<const char *>(data), dataEnd - data);
-            m_incompleteLength = payloadLength;
             return std::string();
         }
         out = update(data, payloadLength + m_cipherInfo.tagLen, m_pipe_dec);
         incrementIv(m_filter_dec, m_iv_dec);
         data += (payloadLength + m_cipherInfo.tagLen);
+        payloadLength = 0;
         if (dataEnd > data) {
             // Append remaining decrypted chunks recursively if there is any
             out += dec(data, dataEnd - data);
@@ -238,19 +236,13 @@ void Cipher::initEnc(std::string &header) {
     }
     try {
         Botan::SymmetricKey _key(
-            reinterpret_cast<const Botan::byte *>(m_key.data()), m_key.size());
+            reinterpret_cast<const Botan::byte *>(m_key_enc.data()),
+            m_key_enc.size());
         Botan::InitializationVector _iv(
             reinterpret_cast<const Botan::byte *>(m_iv_enc.data()),
             m_iv_enc.size());
         m_filter_enc = Botan::get_cipher(m_cipherInfo.internalName, _key, _iv,
                                          Botan::ENCRYPTION);
-        if (m_filter_enc) {
-            qDebug() << "m_filter_enc ok";
-        } else {
-            qDebug() << "m_filter_enc failed";
-        }
-        // Botan::pipe will take control over filter
-        // we shouldn't deallocate filter externally
         m_pipe_enc = std::make_shared<Botan::Pipe>(m_filter_enc);
     } catch (const Botan::Exception &e) {
         QDebug(QtMsgType::QtFatalMsg)
@@ -258,21 +250,19 @@ void Cipher::initEnc(std::string &header) {
     }
 }
 
-void Cipher::initDec(const char *data, size_t length, size_t &offset) {
+bool Cipher::initDec(const char *data, size_t length, size_t &offset) {
     if (m_cipherInfo.type == Cipher::CipherType::AEAD) {
-        m_iv_dec = std::string(m_cipherInfo.ivLen, static_cast<char>(0));
         if (length < m_cipherInfo.saltLen) {
-            throw std::length_error(
-                "Data chunk is too small to initialise an AEAD decipher");
+            return false;
         }
+        m_iv_dec = std::string(m_cipherInfo.ivLen, static_cast<char>(0));
         m_key_dec =
             Cipher::deriveAeadSubkey(m_cipherInfo.keyLen, m_key,
                                      std::string(data, m_cipherInfo.saltLen));
         offset = m_cipherInfo.saltLen;
     } else {
         if (length < m_cipherInfo.ivLen) {
-            throw std::length_error(
-                "Data chunk is too small to initialise a stream decipher");
+            return false;
         }
         m_iv_dec = std::string(data, m_cipherInfo.ivLen);
         m_key_dec = m_key;
@@ -281,46 +271,30 @@ void Cipher::initDec(const char *data, size_t length, size_t &offset) {
 
     try {
         Botan::SymmetricKey _key(
-            reinterpret_cast<const Botan::byte *>(m_key.data()), m_key.size());
+            reinterpret_cast<const Botan::byte *>(m_key_dec.data()),
+            m_key_dec.size());
         Botan::InitializationVector _iv(
             reinterpret_cast<const Botan::byte *>(m_iv_dec.data()),
             m_iv_dec.size());
         m_filter_dec = Botan::get_cipher(m_cipherInfo.internalName, _key, _iv,
                                          Botan::DECRYPTION);
-
-        if (m_filter_dec) {
-            qDebug() << "m_filter_dec ok";
-        } else {
-            qDebug() << "m_filter_dec failed";
-        }
-        // Botan::pipe will take control over filter
-        // we shouldn't deallocate filter externally
         m_pipe_dec = std::make_shared<Botan::Pipe>(m_filter_dec);
     } catch (const Botan::Exception &e) {
         QDebug(QtMsgType::QtFatalMsg)
             << "Failed to initialise cipher: " << e.what();
     }
+    return true;
 }
 
-std::string Cipher::evpBytesToKey(const Cipher::CipherInfo &cipherInfo,
-                                  const std::string &password) {
-    std::vector<std::string> m;
-    std::string data;
-    int i = 0;
-
-    while (m.size() < cipherInfo.keyLen + cipherInfo.ivLen) {
-        if (i == 0) {
-            data = password;
-        } else {
-            data = m[i - 1] + password;
-        }
-        m.push_back(Cipher::md5Hash(data));
-        ++i;
-    }
-
-    std::string ms;
-    std::for_each(m.begin(), m.end(),
-                  [&ms](const std::string &bytes) { ms += bytes; });
-
-    return ms.substr(0, cipherInfo.keyLen);
+std::string Cipher::password2key(const Cipher::CipherInfo &cipherInfo,
+                                 const std::string &password) {
+    std::unique_ptr<Botan::MessageAuthenticationCode> mac(
+        Botan::MessageAuthenticationCode::create("HMAC(SHA-256)"));
+    Botan::PBKDF2 pbkdf2(*mac, 100000);
+    uint8_t out[cipherInfo.keyLen];
+    static uint8_t salt[] = "k4i.top";
+    static size_t salt_len = 7;
+    pbkdf2.derive_key(out, cipherInfo.keyLen, password.data(), password.size(),
+                      salt, salt_len);
+    return std::string((char *)out, cipherInfo.keyLen);
 }

@@ -83,16 +83,6 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <item>
-         <property name="text">
-          <string>aes-128-ctr</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>aes-128-gcm</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item row="2" column="1">

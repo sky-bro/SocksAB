@@ -12,18 +12,7 @@
 class TcpServer : public QTcpServer {
     Q_OBJECT
   public:
-    /*
-     * no proxy address, proxy port, local tcpserver
-     */
-    //    TcpServer(int timeout, bool isLocal, QHostAddress serverAddr, quint16
-    //    serverPort, std::string method, std::string password); TcpServer(int
-    //    timeout, bool isLocal, QString serverAddr, quint16 serverPort,
-    //    std::string method, std::string password);
-    /*
-     * has proxy address, proxy port, remote tcpserver
-     */
     TcpServer(int timeout, bool isLocal);
-    // TODO: add config type
     // alice (client) listen
     bool listen(const QHostAddress& localAddr, quint16 localPort,
                 const QHostAddress& serverAddr, quint16 serverPort,

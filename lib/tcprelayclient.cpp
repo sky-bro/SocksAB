@@ -2,19 +2,23 @@
 
 #include "address.h"
 
-TcpRelayClient::TcpRelayClient(QTcpSocket *localSocket, int timeout,
-                               QHostAddress server_addr, quint16 server_port,
+TcpRelayClient::TcpRelayClient(std::unique_ptr<QTcpSocket> localSocket,
+                               int timeout, QHostAddress server_addr,
+                               quint16 server_port,
                                Cipher::CipherCreator get_cipher)
-    : TcpRelay(localSocket, timeout, server_addr, server_port, get_cipher),
+    : TcpRelay(std::move(localSocket), timeout, server_addr, server_port,
+               get_cipher),
       m_proxy_addr(nullptr) {
     qInfo("TcpRelayClient Constructed!");
 }
 
-TcpRelayClient::TcpRelayClient(QTcpSocket *localSocket, int timeout,
-                               QHostAddress server_addr, quint16 server_port,
+TcpRelayClient::TcpRelayClient(std::unique_ptr<QTcpSocket> localSocket,
+                               int timeout, QHostAddress server_addr,
+                               quint16 server_port,
                                Cipher::CipherCreator get_cipher,
                                QHostAddress proxy_addr, quint16 proxy_port)
-    : TcpRelay(localSocket, timeout, server_addr, server_port, get_cipher),
+    : TcpRelay(std::move(localSocket), timeout, server_addr, server_port,
+               get_cipher),
       m_proxy_addr(new Address(proxy_addr, proxy_port)) {
     qInfo("TcpRelayClient Constructed!");
 }
@@ -119,8 +123,16 @@ void TcpRelayClient::handleLocalTcpData(std::string &data) {
     }
 }
 
-void TcpRelayClient::handleRemoteTcpData(std::string &data) {
-    data = m_cipher->dec(data);
+bool TcpRelayClient::handleRemoteTcpData(std::string &data) {
+    try {
+        data = m_cipher->dec(data);
+    } catch (const std::exception &e) {
+        qWarning() << "Exception occurred decrypting Remote data: " << e.what();
+        close();
+        return false;
+    }
+
     qDebug() << ":handleRemoteTcpData, after decryption:"
              << QByteArray(data.data(), data.size());
+    return true;
 }

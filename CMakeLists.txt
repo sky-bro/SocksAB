@@ -22,3 +22,10 @@ find_package(Botan REQUIRED)
 add_subdirectory(lib)
 add_subdirectory(Socks-Alice)
 add_subdirectory(Socks-Bob)
+
+option(BUILD_TESTS "build tests or not" OFF)
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif(BUILD_TESTS)

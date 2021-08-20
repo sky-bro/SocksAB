@@ -8,10 +8,10 @@ class TcpRelayClient : public TcpRelay {
     Q_OBJECT
   public:
     //  TcpRelayClient();
-    TcpRelayClient(QTcpSocket *localSocket, int timeout,
+    TcpRelayClient(std::unique_ptr<QTcpSocket> localSocket, int timeout,
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher);
-    TcpRelayClient(QTcpSocket *localSocket, int timeout,
+    TcpRelayClient(std::unique_ptr<QTcpSocket> localSocket, int timeout,
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher, QHostAddress proxy_addr,
                    quint16 proxy_port);
@@ -24,7 +24,7 @@ class TcpRelayClient : public TcpRelay {
 
   protected:
     void handleLocalTcpData(std::string &data) final;
-    void handleRemoteTcpData(std::string &data) final;
+    bool handleRemoteTcpData(std::string &data) final;
 };
 
 #endif  // TCPRELAYCLIENT_H

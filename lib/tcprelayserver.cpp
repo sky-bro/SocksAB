@@ -2,10 +2,12 @@
 
 #include "address.h"
 
-TcpRelayServer::TcpRelayServer(QTcpSocket *localSocket, int timeout,
-                               QHostAddress server_addr, quint16 server_port,
+TcpRelayServer::TcpRelayServer(std::unique_ptr<QTcpSocket> localSocket,
+                               int timeout, QHostAddress server_addr,
+                               quint16 server_port,
                                Cipher::CipherCreator get_cipher)
-    : TcpRelay(localSocket, timeout, server_addr, server_port, get_cipher) {
+    : TcpRelay(std::move(localSocket), timeout, server_addr, server_port,
+               get_cipher) {
     qInfo("TcpRelayServer Constructed!");
 }
 
@@ -64,6 +66,7 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
     }
 
     if (data.empty()) {
+        // 可能需要更多数据才能解密
         qWarning("Data is empty after decryption.");
         return;
     }
@@ -83,8 +86,9 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
     }
 }
 
-void TcpRelayServer::handleRemoteTcpData(std::string &data) {
+bool TcpRelayServer::handleRemoteTcpData(std::string &data) {
     qDebug() << "handleRemoteTcpData, before encryption:"
              << QByteArray(data.data(), data.size());
     data = m_cipher->enc(data);
+    return true;
 }

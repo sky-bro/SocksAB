@@ -1,34 +1,36 @@
 #include "tcprelay.h"
 
-TcpRelay::TcpRelay(QTcpSocket* localSocket, int timeout,
+#include <QThread>
+
+TcpRelay::TcpRelay(std::unique_ptr<QTcpSocket> localSocket, int timeout,
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher)
     : m_stage(INIT),
       m_serverAddr(server_addr),
       m_serverPort(server_port),
       m_cipher(get_cipher()),
-      m_local(localSocket),
-      m_remote(new QTcpSocket()),
+      m_local(std::move(localSocket)),
+      m_remote(std::make_unique<QTcpSocket>()),
       m_timer(new QTimer()) {
     m_timer->setInterval(timeout);
     connect(m_timer.get(), &QTimer::timeout, this, &TcpRelay::onTimeout);
 
-    connect(m_local, &QAbstractSocket::errorOccurred, this,
+    connect(m_local.get(), &QAbstractSocket::errorOccurred, this,
             &TcpRelay::onLocalTcpSocketError);
-    connect(m_local, &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(m_local, &QTcpSocket::readyRead, this,
+    //    connect(m_local, &QTcpSocket::disconnected, this, &TcpRelay::close);
+    connect(m_local.get(), &QTcpSocket::readyRead, this,
             &TcpRelay::onLocalTcpSocketReadyRead);
-    connect(m_local, &QTcpSocket::readyRead, m_timer.get(),
+    connect(m_local.get(), &QTcpSocket::readyRead, m_timer.get(),
             static_cast<void (QTimer::*)()>(&QTimer::start));
 
-    connect(m_remote, &QTcpSocket::connected, this,
+    connect(m_remote.get(), &QTcpSocket::connected, this,
             &TcpRelay::onRemoteConnected);
-    connect(m_remote, &QAbstractSocket::errorOccurred, this,
+    connect(m_remote.get(), &QAbstractSocket::errorOccurred, this,
             &TcpRelay::onRemoteTcpSocketError);
-    connect(m_remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(m_remote, &QTcpSocket::readyRead, this,
+    //    connect(m_remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
+    connect(m_remote.get(), &QTcpSocket::readyRead, this,
             &TcpRelay::onRemoteTcpSocketReadyRead);
-    connect(m_remote, &QTcpSocket::readyRead, m_timer.get(),
+    connect(m_remote.get(), &QTcpSocket::readyRead, m_timer.get(),
             static_cast<void (QTimer::*)()>(&QTimer::start));
 
     m_local->setReadBufferSize(RemoteRecvSize);
@@ -60,26 +62,37 @@ void TcpRelay::onRemoteTcpSocketError() {
     QString msg = "Remote socket: " + m_remote->errorString();
     // it's not an "error" if remote host closed a connection
     if (m_remote->error() == QAbstractSocket::RemoteHostClosedError) {
-        qDebug() << msg;
+        qWarning().noquote() << msg;
     } else {
-        qWarning() << msg;
+        qWarning().noquote() << msg;
     }
-    m_local->flush();
-    close();
+    if (m_local->bytesToWrite() == 0)
+        close();
+    else {
+        m_local->disconnectFromHost();
+        connect(m_local.get(), &QTcpSocket::disconnected, this,
+                &TcpRelay::close);
+    }
 }
 
 void TcpRelay::onLocalTcpSocketError() {
     // it's not an "error" if remote host closed a connection
     qDebug() << "onLocalTcpSocketError";
     QString msg = "Local socket[" + m_local->peerAddress().toString() + ":" +
-                  m_local->peerPort() + "]:" + m_local->errorString();
+                  QString::number(m_local->peerPort()) +
+                  "]:" + m_local->errorString();
     if (m_local->error() == QAbstractSocket::RemoteHostClosedError) {
-        qDebug().noquote() << msg;
+        qWarning().noquote() << msg;
     } else {
         qWarning().noquote() << msg;
     }
-    m_remote->flush();
-    close();
+    if (m_remote->bytesToWrite() == 0)
+        close();
+    else {
+        m_remote->disconnectFromHost();
+        connect(m_remote.get(), &QTcpSocket::disconnected, this,
+                &TcpRelay::close);
+    }
 }
 
 void TcpRelay::onLocalTcpSocketReadyRead() {
@@ -120,8 +133,9 @@ void TcpRelay::onRemoteTcpSocketReadyRead() {
         return;
     }
 
-    handleRemoteTcpData(data);
-    m_local->write(data.data(), data.size());
+    if (handleRemoteTcpData(data)) {
+        m_local->write(data.data(), data.size());
+    }
 }
 
 void TcpRelay::onTimeout() {
@@ -134,8 +148,10 @@ void TcpRelay::close() {
         qDebug("already destroyed");
         return;
     }
-    m_remote->deleteLater();
-    m_local->deleteLater();
+    //    delete m_remote;
+    //    delete m_local;
+    //    m_remote->deleteLater();
+    //    m_local->deleteLater();
     m_stage = DESTROYED;
     emit finished();
 }

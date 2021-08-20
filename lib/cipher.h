@@ -6,16 +6,19 @@
 #include <botan/hkdf.h>
 #include <botan/hmac.h>
 #include <botan/kdf.h>
+#include <botan/mac.h>
 #include <botan/md5.h>
+#include <botan/pbkdf2.h>
 #include <botan/pipe.h>
 #include <botan/sha160.h>
+#include <botan/sha2_32.h>
 
 #include <QDebug>
 #include <QtEndian>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
-#include <unordered_map>
 
 const size_t AEAD_CHUNK_SIZE_LEN = 2;
 const uint16_t AEAD_CHUNK_SIZE_MASK = 0x3FFF;
@@ -46,7 +49,7 @@ class Cipher {
     // m_profile.password()); }
     using CipherCreator = std::function<std::unique_ptr<Cipher>()>;
 
-    static const std::unordered_map<std::string, CipherInfo> cipherInfoMap;
+    static const std::map<std::string, CipherInfo> cipherInfoMap;
 
     /*
      * The label/info string used for key derivation function
@@ -78,8 +81,6 @@ class Cipher {
      */
     void incrementIv(Botan::Keyed_Filter *m_filter, std::string &m_iv);
 
-    static std::string md5Hash(const std::string &in);
-
     /*
      * get session key in aead mode
      */
@@ -88,24 +89,29 @@ class Cipher {
                                         const std::string &salt);
 
     Cipher(const std::string method, const std::string password);
-    Cipher(Cipher &cipher);
 
     std::string update(const std::string &data,
                        std::shared_ptr<Botan::Pipe> m_pipe);
     std::string update(const char *data, size_t length,
                        std::shared_ptr<Botan::Pipe> m_pipe);
 
-    std::string enc(std::string &data);
+    std::string enc(const std::string &data);
     std::string enc(const char *data, size_t length);
-    std::string dec(std::string &data);
+    std::string dec(const std::string &data);
     std::string dec(const char *data, size_t length);
 
   private:
     void initEnc(std::string &header);
-    void initDec(const char *data, size_t length, size_t &offset);
+    bool initDec(const char *data, size_t length, size_t &offset);
 
-    std::string evpBytesToKey(const CipherInfo &cipherInfo,
-                              const std::string &password);
+    /**
+     * @brief KDF, generate key from password
+     * @param cipherInfo, get needed key length
+     * @param password, input key material
+     * @return
+     */
+    std::string password2key(const CipherInfo &cipherInfo,
+                             const std::string &password);
 
     Botan::Keyed_Filter *m_filter_enc;
     Botan::Keyed_Filter *m_filter_dec;
@@ -120,7 +126,7 @@ class Cipher {
     std::string m_iv_dec;  // nonce for dec
 
     std::string m_incompleteChunk;
-    uint16_t m_incompleteLength;
+    uint16_t payloadLength;
 };
 
 #endif  // CIPHER_H

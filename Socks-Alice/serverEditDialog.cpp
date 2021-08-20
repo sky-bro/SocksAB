@@ -2,6 +2,7 @@
 
 #include <QDebug>
 
+#include "cipher.h"
 #include "mainDialog.h"
 #include "ui_serverEditDialog.h"
 
@@ -15,6 +16,8 @@ ServerEditDialog::ServerEditDialog(QTableWidget *table, int row,
                                    QWidget *parent)
     : QDialog(parent), serverList(table), r(row), ui(new Ui::ServerEditDialog) {
     ui->setupUi(this);
+    for (auto &p : Cipher::cipherInfoMap)
+        ui->comboBoxMethod->addItem(p.first.data());
     if (table->rowCount() > row) {  // edit row
         ui->lineEditName->setText(table->item(row, 0)->text());
         ui->lineEditServerAddr->setText(table->item(row, 1)->text());

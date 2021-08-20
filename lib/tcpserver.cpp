@@ -47,7 +47,7 @@ bool TcpServer::listen(const QHostAddress& serverAddr, quint16 serverPort,
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor) {
-    QTcpSocket* localSocket = new QTcpSocket();
+    std::unique_ptr<QTcpSocket> localSocket = std::make_unique<QTcpSocket>();
     localSocket->setSocketDescriptor(socketDescriptor);
     QHostAddress peerAddress = localSocket->peerAddress();
     quint16 peerPort = localSocket->peerPort();
@@ -57,11 +57,12 @@ void TcpServer::incomingConnection(qintptr socketDescriptor) {
     TcpRelay* tcpRelay;
     if (m_isLocal) {
         tcpRelay = new TcpRelayClient(
-            localSocket, m_timeout * 1000, m_serverAddr, m_serverPort,
+            std::move(localSocket), m_timeout * 1000, m_serverAddr,
+            m_serverPort,
             [this]() { return std::make_unique<Cipher>(m_method, m_password); },
             m_proxyAddr, m_proxyPort);
     } else {
-        tcpRelay = new TcpRelayServer(localSocket, m_timeout * 1000,
+        tcpRelay = new TcpRelayServer(std::move(localSocket), m_timeout * 1000,
                                       m_serverAddr, m_serverPort, [this]() {
                                           return std::make_unique<Cipher>(
                                               m_method, m_password);
