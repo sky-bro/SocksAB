@@ -71,7 +71,7 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
         return;
     }
     qDebug() << "got local data after dec:"
-             << QByteArray(data.data(), data.size());
+             << QByteArray(data.data(), (int)data.size());
 
     if (m_stage == STREAM) {
         writeToRemote(data.data(), data.size());
@@ -88,7 +88,7 @@ void TcpRelayServer::handleLocalTcpData(std::string &data) {
 
 bool TcpRelayServer::handleRemoteTcpData(std::string &data) {
     qDebug() << "handleRemoteTcpData, before encryption:"
-             << QByteArray(data.data(), data.size());
+             << QByteArray(data.data(), (int)data.size());
     data = m_cipher->enc(data);
     return true;
 }

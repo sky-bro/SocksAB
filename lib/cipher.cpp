@@ -76,9 +76,7 @@ void Cipher::incrementIv(Botan::Keyed_Filter *m_filter, std::string &m_iv) {
 std::string Cipher::deriveAeadSubkey(size_t length,
                                      const std::string &masterKey,
                                      const std::string &salt) {
-    std::unique_ptr<Botan::KDF> kdf;
-    kdf = std::make_unique<Botan::HKDF>(new Botan::HMAC(new Botan::SHA_160()));
-    // std::string salt = randomIv(cipherInfo.saltLen);
+    std::unique_ptr<Botan::KDF> kdf = Botan::KDF::create("HKDF(SHA-256)");
     Botan::secure_vector<Botan::byte> skey = kdf->derive_key(
         length, reinterpret_cast<const uint8_t *>(masterKey.data()),
         masterKey.length(), salt, kdfLabel);
@@ -288,13 +286,12 @@ bool Cipher::initDec(const char *data, size_t length, size_t &offset) {
 
 std::string Cipher::password2key(const Cipher::CipherInfo &cipherInfo,
                                  const std::string &password) {
-    std::unique_ptr<Botan::MessageAuthenticationCode> mac(
-        Botan::MessageAuthenticationCode::create("HMAC(SHA-256)"));
-    Botan::PBKDF2 pbkdf2(*mac, 100000);
-    uint8_t out[cipherInfo.keyLen];
     static uint8_t salt[] = "k4i.top";
     static size_t salt_len = 7;
-    pbkdf2.derive_key(out, cipherInfo.keyLen, password.data(), password.size(),
-                      salt, salt_len);
-    return std::string((char *)out, cipherInfo.keyLen);
+    static size_t iterations = 1e5;
+    std::unique_ptr<Botan::PBKDF> pbkdf =
+        Botan::PBKDF::create("PBKDF2(SHA-256)");
+    Botan::secure_vector<Botan::byte> out = pbkdf->pbkdf_iterations(
+        cipherInfo.keyLen, password, salt, salt_len, iterations);
+    return std::string((char *)out.data(), cipherInfo.keyLen);
 }

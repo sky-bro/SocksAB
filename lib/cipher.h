@@ -3,15 +3,9 @@
 
 #include <botan/auto_rng.h>
 #include <botan/filters.h>
-#include <botan/hkdf.h>
-#include <botan/hmac.h>
 #include <botan/kdf.h>
-#include <botan/mac.h>
-#include <botan/md5.h>
-#include <botan/pbkdf2.h>
+#include <botan/pbkdf.h>
 #include <botan/pipe.h>
-#include <botan/sha160.h>
-#include <botan/sha2_32.h>
 
 #include <QDebug>
 #include <QtEndian>

@@ -4,7 +4,7 @@
 #include <QTcpSocket>
 
 HttpProxy::HttpProxy() : QTcpServer() {
-    this->setMaxPendingConnections(FD_SETSIZE);
+    this->setMaxPendingConnections(MaxPendingConnections);
 }
 
 bool HttpProxy::httpListen(const QHostAddress &http_addr, uint16_t http_port,

@@ -4,7 +4,9 @@
 #include <QNetworkProxy>
 #include <QTcpServer>
 
-#define FD_SETSIZE 1024
+#ifndef MaxPendingConnections
+#define MaxPendingConnections 1024
+#endif
 
 class HttpProxy : public QTcpServer {
     Q_OBJECT

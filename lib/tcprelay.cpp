@@ -145,13 +145,15 @@ void TcpRelay::onTimeout() {
 
 void TcpRelay::close() {
     if (m_stage == DESTROYED) {
-        qDebug("already destroyed");
+        qWarning("already destroyed");
         return;
     }
+    m_stage = DESTROYED;
     //    delete m_remote;
     //    delete m_local;
     //    m_remote->deleteLater();
     //    m_local->deleteLater();
-    m_stage = DESTROYED;
+    m_local->close();
+    m_remote->close();
     emit finished();
 }

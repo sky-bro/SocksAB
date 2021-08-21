@@ -7,7 +7,7 @@
 
 TcpServer::TcpServer(int timeout, bool isLocal)
     : m_timeout(timeout), m_isLocal(isLocal) {
-    setMaxPendingConnections(FD_SETSIZE);
+    setMaxPendingConnections(MaxPendingConnections);
     qInfo() << "TcpServer Constructed!";
 }
 

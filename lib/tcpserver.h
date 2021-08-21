@@ -7,7 +7,9 @@
 #include "cipher.h"
 #include "tcprelay.h"
 
-#define FD_SETSIZE 1024
+#ifndef MaxPendingConnections
+#define MaxPendingConnections 1024
+#endif
 
 class TcpServer : public QTcpServer {
     Q_OBJECT
