@@ -5,10 +5,26 @@
 std::string m_password = "sky-io";
 std::string pt0 = "12345678";
 
+TEST(test_cipher, test_one) {
+    std::string pt;
+    for (int i = 0; i < 128; ++i) {
+        pt += pt0;
+    }
+    std::string method = "aes-256-ctr";
+    std::unique_ptr<Cipher> cipher =
+        std::make_unique<Cipher>(method, m_password);
+    std::string ct1 = cipher->enc("1"), ct2 = cipher->enc("2");
+    qInfo() << QByteArray(ct1.data(), ct1.size()) << ct1.size();
+    qInfo() << QByteArray(ct2.data(), ct2.size()) << ct2.size();
+    std::cout << cipher->dec(ct1) << std::endl;
+    std::cout << cipher->dec(ct2) << std::endl;
+}
+
 TEST(test_cipher, test_all_ciphers_with_whole_data) {
     std::string pt;
     for (int i = 0; i < 128; ++i) {
         pt += pt0;
+        
     }
     for (auto &p : Cipher::cipherInfoMap) {
         std::string m_method = p.first;

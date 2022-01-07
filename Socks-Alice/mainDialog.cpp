@@ -122,8 +122,28 @@ void MainDialog::setUser(USERTYPE usertype) {
     show();
 }
 
+void MainDialog::reject() {
+    qInfo() << "reject called";
+    if (false) {
+	QDialog::reject();
+    } else {
+	show_hide();
+    }
+}
+
+QSettings* getConf() {
+    QString configPath = QCoreApplication::applicationDirPath() + "/Socks-Alice.ini";
+    QSettings *psettings;
+    if (QFile(configPath).exists()) {
+        psettings = new QSettings(configPath, QSettings::IniFormat);
+    } else {
+        psettings = new QSettings("sky-bro", "Socks-Alice");
+    }
+    return psettings;
+}
+
 void MainDialog::readSettings() {
-    QSettings settings("sky-bro", "Socks-Alice");
+    QSettings *psettings = getConf(), &settings = *psettings;
 
     resize(settings.value("window/size", QSize(500, 300)).toSize());
 
@@ -167,11 +187,11 @@ void MainDialog::readSettings() {
         }
     }
     settings.endArray();
+    delete psettings;
 }
 
 void MainDialog::writeSettings() {
-    QSettings settings("sky-bro", "Socks-Alice");
-
+    QSettings *psettings = getConf(), &settings = *psettings;
     settings.setValue("window/size", size());
 
     settings.setValue("local/ip", ui->lineEditIP->text());
@@ -206,6 +226,7 @@ void MainDialog::writeSettings() {
     settings.endArray();
 
     qInfo() << "settings written to" << settings.fileName();
+    delete psettings;
 }
 
 void MainDialog::checkCurrentIndex(const QModelIndex &index) {

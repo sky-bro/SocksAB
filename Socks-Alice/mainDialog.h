@@ -84,6 +84,7 @@ class MainDialog : public QDialog {
 
   public slots:
     void setUser(USERTYPE usertype);
+    void reject();
   private slots:
     void trayiconActivated(QSystemTrayIcon::ActivationReason reason);
     void show_hide();

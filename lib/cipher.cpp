@@ -3,6 +3,7 @@
 const std::string Cipher::kdfLabel = {"get-subkey"};
 
 const std::map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
+    // internal name, keyLen, ivLen, type, saltLen, tagLen
     {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
     {"aes-192-cfb", {"AES-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
     {"aes-256-cfb", {"AES-256/CFB", 32, 16, Cipher::CipherType::STREAM}},

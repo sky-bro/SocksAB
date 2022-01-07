@@ -17,18 +17,18 @@ mkdir build
 cd build
 cmake ..
 make
-# sudo make install # 安装
+make install # 安装
 ```
 
 ### 直接下载使用
 
 可以直接从releases中下载对应系统的文件即可，依赖也跟着打包了
 
-## 运行或测试
+## 基本原理
 
-* todo
-* 可以使用ssh在本地快速搭建一个socks5服务器，可以参考[利用ssh快速建一个socks5服务器用于测试](https://www.jianshu.com/p/1f34f944b081)
-  * 如 `ssh -fND 127.1:2000 sky@localhost`
+也是基于socks协议拆分成两部分, 所以中间客户端(Alice)到服务端(Bob)握手过程传输的内容和socks协议基本一样, 即包含host(ip或者域名)和端口信息。
+
+所做的无非是对客户端到服务端的通信进行加密/混淆/伪装
 
 ### Socks-Alice使用
 
@@ -48,7 +48,7 @@ make
 
 4. **链路选择**就是添加服务器的，右键然后Add Server
 
-   ![add server](./images/add-server.png)
+   ![add server](./images/add-server-dialog.png)
 
    要连接某个服务器的话要把当前连接的那个服务器断开，右键对应的行就能看到Disconnect选项
 
@@ -73,13 +73,23 @@ Options:
   -k, --key <key>    shared secret between Alice and Bob
 ```
 
+## 运行测试
+
+* 可以使用ssh在本地快速搭建一个socks5服务器，可以参考[利用ssh快速建一个socks5服务器用于测试](https://www.jianshu.com/p/1f34f944b081)
+  * 如`ssh -ND localhost:1083 sky@localhost`(增加`-f`参数可以在后台运行)
+  * Socks-Bob的下一跳可以是一个Socks代理(或者直接访问目标网站)
+* 运行Socks-Bob
+  * 如`Socks-Bob --port 1082 --key "password" --method chacha20`
+* 运行Socks-Alice, 添加链路, 如
+  ![server list](./images/server-list.png)
+
 ## THINKG / TODO
 
 * [ ] 同时只能运行一个实例
   * https://github.com/itay-grudev/SingleApplication
 * 密码库的选择
-  * openssl
-  * botan
+  * openssl/libcrypto
+  * [x] botan
     * libqtshadowsocks
   * crypto++
   * libsodium
@@ -89,7 +99,7 @@ Options:
   * `--key` `-k` Alice和Bob间的secret
   * `--ip` `-i` server绑定的ip地址 默认0.0.0.0
   * `--port` `-p` 绑定的端口 默认1082
-  * [ ] `--method` `-m` 加密(通信)方式
+  * `--method` `-m` 加密(通信)方式
   * `./Socks-Bob --ip 0.0.0.0 --port 1082 --key sky-io`
   * `nohup ./Socks-Bob -k sky-io > /dev/null 2>&1 &`
   * [ ] `--config` `-c` 支持配置文件
@@ -98,8 +108,9 @@ Options:
   * 链路列表
     * 备注/名字, 入口ip:port, 代理出口ip:port, 密码, 加密方式method, 超时
     * 延迟/是否畅通, 当前是否连接此链路
-* 链路延迟检测
+    * [x] 支持导入/导出配置
+* [ ] 链路延迟检测
 * 添加github actions自动编译并发布
-  * [x] linux
+  * [x] linux -- github action仅提供ubuntu18之后版本，没有16了，所以需要
   * [x] windows
   * [x] mac
