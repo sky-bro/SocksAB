@@ -137,7 +137,7 @@ QSettings* getConf() {
     if (QFile(configPath).exists()) {
         psettings = new QSettings(configPath, QSettings::IniFormat);
     } else {
-        psettings = new QSettings("sky-bro", "Socks-Alice");
+        psettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "sky-bro", "Socks-Alice");
     }
     return psettings;
 }

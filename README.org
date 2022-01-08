@@ -1,0 +1,124 @@
+#+TITLE: SocksAB
+#+AUTHOR: [[https://k4i.top][k4i]]
+
+* 编译与安装
+
+** 直接下载使用
+
+直接从[[https://github.com/sky-bro/SocksAB/releases][releases页面]]下载最新对应系统的文件即可, 依赖也跟着打包了.
+
+带有Alice的表示是客户端, 带有Bob表示是服务端, 当前有linux, macOS, windows三个系统版本, 根据你的系统选择需要的版本下载.
+
+如果无法访问github, 可以通过这个 [[https://proxy.k4i.top/-----https://github.com/sky-bro/SocksAB/releases][jsproxy]]下载
+
+** 手动编译安装
+
+首先需要安装[[https://github.com/randombit/botan][botan]]库 (arch用户可以使用 ~sudo pacman -Sy botan~)进行安装.
+
+然后使用下面的命令进行编译与安装.
+
+#+begin_src shell
+  mkdir build
+  cd build
+  cmake ..
+  make # 编译
+  make install # 安装
+#+end_src
+
+* 基本原理
+
+也是基于socks协议拆分成两部分, 所以中间客户端(Alice)到服务端(Bob)握手过程传输的内容和socks协议基本一样, 即包含host(ip或者域名)和端口信息。
+
+所做的无非是对客户端到服务端的通信进行加密/混淆/伪装
+
+* Socks-Alice使用教程
+
+** 配置文件
+
+Socks-Alice会首先检查程序所在目录是否有Socks-Alice.ini文件(用户可以新建这个空文件, 配置便会保存到这里), 如果没有, 那么会将配置写到系统对应的位置, 如下 (参考[[https://doc.qt.io/qt-5/qsettings.html#setPath][qt doc: QSettings::setPath]])
+
+| 系统        | 配置路径                  |
+|-------------+---------------------------|
+| windows     | ~FOLDERID_RoamingAppData~ |
+| linux/macOS | ~$HOME/.config~           |
+
+** 本地代理
+
+这里可以设置本地代理的ip和端口, 支持Socks5与 HTTP代理(两个端口不能冲突).
+
+[[./images/local-settings.png]]
+
+Socks5代理必须选择(HTTP代理也是依赖它)
+
+API接口暂时没有用
+
+** 链路选择
+
+在运行程序之前, 需要选择一条链路/Server, 在链路选择tab下面通过右键菜单可以添加/删除/编辑/导入/导出/选择/断开链路(一些选项需要在断开当前链路后才能选择)
+
+添加链路:
+
+[[./images/add-server-dialog.png]]
+
+字段说明:
+
+| Name   | IP, Port    | Method   | Proxy IP, Port | Key  |
+|--------+-------------+----------+----------------+------|
+| 链路名 | Bob运行地址 | 加密方法 | Bob下一跳地址  | 密码 |
+
+因为Bob端可以进一步选择是否通过Socks代理出去, 所以Alice通过指定Proxy IP与Proxy Port来进行控制, 当Proxy Port为0时表示Bob端不走Socks代理.
+
+在选择/断开链路时会自动本地代理tab下的运行/停止.
+
+** 运行
+
+之后点击运行即可开始运行(需确保链路选择tab下选择了某个链路).
+
+ESC可以缩小到系统托盘.
+
+(左右键)单击托盘图标可以看到菜单.
+
+* Socks-Bob使用教程
+
+Socks-Bob是我们的服务端, 它是一个命令行程序, ~-h~ 查看运行参数说明:
+
+#+begin_src shell
+  > ./Socks-Bob -h
+  Usage: Socks-Bob [options]
+
+  Options:
+    -h, --help                 Displays help on commandline options.
+    --help-all                 Displays help including Qt specific options.
+    -i, --ip <ip>              ip address of Socks-Bob
+    -p, --port <port>          port of Socks-Bob
+    -k, --key <key>            shared secret between Alice and Bob
+    -m, --method <method>      encryption method
+    -l, --logLevel <logLevel>  logLevel, level >= logLevel will be printed out
+    -f, --logFile <logFile>    logFile path, default to stderr
+#+end_src
+
+* 运行测试
+
+1. 可以使用ssh在本地快速搭建一个socks5服务器，参考[[https://www.jianshu.com/p/1f34f944b081][利用ssh快速建一个socks5服务器用于测试]]
+   + 如`ssh -ND localhost:1083 sky@localhost`(增加`-f`参数可以在后台运行)
+   + Socks-Bob的下一跳可以是一个Socks代理(或者直接访问目标网站)
+2. 运行Socks-Bob
+   + 如`Socks-Bob --port 1082 --key "password" --method chacha20`
+3. 运行Socks-Alice, 添加链路, 如
+
+   [[./images/server-list.png]]
+
+* COMMENT THINKING
+
++ [ ] 同时只能运行一个实例
+  https://github.com/itay-grudev/SingleApplication
++ 密码库的选择
+  + openssl/libcrypto
+  + [x] botan
+    + libqtshadowsocks
+  + crypto++
+  + libsodium
++ [ ] 中英文支持
++ Socks-Bob配置文件支持
++ Socks-Alice支持命令行运行
++ [ ] 链路延迟检测
