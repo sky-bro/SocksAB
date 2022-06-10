@@ -115,10 +115,9 @@ void MainDialog::setUser(USERTYPE usertype) {
     // 2: admin tab
     // 1: user tab
     // if admin, hide user tab
-    // alawys ADMIN for now
     int index /*= ADMIN*/;
     index = usertype == ADMIN ? 1 : 2;
-    ui->tabWidget->setTabVisible(index, false);
+    ui->tabWidget->removeTab(index);
     mSystemTrayIcon->show();
     show();
 }

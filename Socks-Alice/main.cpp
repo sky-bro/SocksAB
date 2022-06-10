@@ -9,11 +9,15 @@
 int main(int argc, char *argv[]) {
     qInstallMessageHandler(messageHandler);
     QApplication a(argc, argv);
-    USERTYPE usertype = USER;
-    LoginDialog loginDialog;
-    loginDialog.show();
+    // USERTYPE usertype = USER;
+    // LoginDialog loginDialog;
+    // loginDialog.show();
+    // MainDialog mainDialog;
+    // QObject::connect(&loginDialog, &LoginDialog::loginSuccess, &mainDialog,
+    //                  &MainDialog::setUser);
+
     MainDialog mainDialog;
-    QObject::connect(&loginDialog, &LoginDialog::loginSuccess, &mainDialog,
-                     &MainDialog::setUser);
+    // alawys ADMIN for now
+    mainDialog.setUser(ADMIN);
     return a.exec();
 }
