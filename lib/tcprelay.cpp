@@ -15,8 +15,15 @@ TcpRelay::TcpRelay(std::unique_ptr<QTcpSocket> localSocket, int timeout,
     m_timer->setInterval(timeout);
     connect(m_timer.get(), &QTimer::timeout, this, &TcpRelay::onTimeout);
 
+#if QT_VERSION >= 0x051500
     connect(m_local.get(), &QAbstractSocket::errorOccurred, this,
             &TcpRelay::onLocalTcpSocketError);
+#else
+    connect(
+        m_local.get(),
+        SIGNAL(QAbstractSocket::error(QAbstractSocket::SocketError)), this,
+        SLOT(TcpRelay::onLocalTcpSocketError(QAbstractSocket::SocketError)));
+#endif
     //    connect(m_local, &QTcpSocket::disconnected, this, &TcpRelay::close);
     connect(m_local.get(), &QTcpSocket::readyRead, this,
             &TcpRelay::onLocalTcpSocketReadyRead);
@@ -25,8 +32,16 @@ TcpRelay::TcpRelay(std::unique_ptr<QTcpSocket> localSocket, int timeout,
 
     connect(m_remote.get(), &QTcpSocket::connected, this,
             &TcpRelay::onRemoteConnected);
+#if QT_VERSION >= 0x051500
     connect(m_remote.get(), &QAbstractSocket::errorOccurred, this,
             &TcpRelay::onRemoteTcpSocketError);
+#else
+    connect(
+        m_remote.get(),
+        SIGNAL(QAbstractSocket::error(QAbstractSocket::SocketError)), this,
+        SLOT(TcpRelay::onRemoteTcpSocketError(QAbstractSocket::SocketError)));
+#endif
+
     //    connect(m_remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
     connect(m_remote.get(), &QTcpSocket::readyRead, this,
             &TcpRelay::onRemoteTcpSocketReadyRead);

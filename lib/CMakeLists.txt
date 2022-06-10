@@ -16,16 +16,13 @@ set(SOURCE
     udprelay.h
     udprelay.cpp
     log.h
-    log.cpp
-    )
+    log.cpp)
 
 add_library(socksAB ${SOURCE})
 
-target_include_directories(socksAB
-    PUBLIC ${Botan_INCLUDE_DIR})
+target_include_directories(socksAB PUBLIC ${Botan_INCLUDE_DIR})
 
-target_link_libraries(socksAB
-    PUBLIC Qt${QT_VERSION_MAJOR}::Network
-    PRIVATE Botan::Botan)
-
-message("botan include dir: ${Botan_INCLUDE_DIR}")
+target_link_libraries(
+  socksAB
+  PUBLIC Qt${QT_VERSION_MAJOR}::Network
+  PRIVATE Botan::Botan)

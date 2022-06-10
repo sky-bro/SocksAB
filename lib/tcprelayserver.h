@@ -8,7 +8,6 @@
 class TcpRelayServer : public TcpRelay {
     Q_OBJECT
   public:
-    TcpRelayServer();
     TcpRelayServer(std::unique_ptr<QTcpSocket> localSocket, int timeout,
                    QHostAddress server_addr, quint16 server_port,
                    Cipher::CipherCreator get_cipher);

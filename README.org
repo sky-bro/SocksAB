@@ -1,5 +1,11 @@
 #+TITLE: SocksAB
 #+AUTHOR: [[https://k4i.top][k4i]]
+#+LATEX_CLASS: elegantpaper
+#+OPTIONS: toc:nil
+
+#+begin_export latex
+  \tableofcontents \clearpage
+#+end_export
 
 * 编译与安装
 
@@ -13,11 +19,18 @@
 
 ** 手动编译安装
 
-首先需要安装[[https://github.com/randombit/botan][botan]]库 (arch用户可以使用 ~sudo pacman -Sy botan~)进行安装.
+安装依赖
+
+#+begin_src shell
+  apt update
+  apt install -y git build-essential qtbase5-dev libbotan-2-dev pkg-config cmake
+#+end_src
 
 然后使用下面的命令进行编译与安装.
 
 #+begin_src shell
+  git clone https://github.com/sky-bro/SocksAB.git
+  cd SocksAB
   mkdir build
   cd build
   cmake ..

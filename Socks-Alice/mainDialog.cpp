@@ -1,6 +1,7 @@
 #include "mainDialog.h"
 
 #include <QClipboard>
+#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
@@ -125,19 +126,21 @@ void MainDialog::setUser(USERTYPE usertype) {
 void MainDialog::reject() {
     qInfo() << "reject called";
     if (false) {
-	QDialog::reject();
+        QDialog::reject();
     } else {
-	show_hide();
+        show_hide();
     }
 }
 
-QSettings* getConf() {
-    QString configPath = QCoreApplication::applicationDirPath() + "/Socks-Alice.ini";
+QSettings *getConf() {
+    QString configPath =
+        QCoreApplication::applicationDirPath() + "/Socks-Alice.ini";
     QSettings *psettings;
     if (QFile(configPath).exists()) {
         psettings = new QSettings(configPath, QSettings::IniFormat);
     } else {
-        psettings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "sky-bro", "Socks-Alice");
+        psettings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                  "sky-bro", "Socks-Alice");
     }
     return psettings;
 }

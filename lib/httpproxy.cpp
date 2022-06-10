@@ -1,5 +1,7 @@
 #include "httpproxy.h"
 
+#include <qobjectdefs.h>
+
 #include <QAbstractSocket>
 #include <QTcpSocket>
 
@@ -21,8 +23,14 @@ void HttpProxy::incomingConnection(qintptr fd) {
             &HttpProxy::onLocalReadyRead);
     connect(local_socket, &QTcpSocket::disconnected, local_socket,
             &QTcpSocket::deleteLater);
+#if QT_VERSION >= 0x051500
     connect(local_socket, &QAbstractSocket::errorOccurred, this,
             &HttpProxy::onLocalSocketError);
+#else
+    connect(local_socket,
+            SIGNAL(QAbstractSocket::error(QAbstractSocket::SocketError)), this,
+            SLOT(HttpProxy::onLocalSocketError(QAbstractSocket::SocketError)));
+#endif
     local_socket->setSocketDescriptor(fd);
     qDebug() << "new connection:" << local_socket->peerAddress()
              << local_socket->peerPort();
@@ -59,7 +67,7 @@ void HttpProxy::onLocalReadyRead() {
     if (local_socket->property("tunneling").isValid()) {
         QByteArray d = local_socket->readAll();
         remote_socket = local_socket->property("other").value<QTcpSocket *>();
-        assert(local_socket != remote_socket);
+        // assert(local_socket != remote_socket);
         qDebug() << "about to write to remote:" << remote_socket->state();
         if (remote_socket->isWritable())
             qDebug() << "wrote" << remote_socket->write(d)
@@ -154,8 +162,14 @@ void HttpProxy::onLocalReadyRead() {
             &HttpProxy::onRemoteReadyRead);
     connect(remote_socket, &QTcpSocket::disconnected, remote_socket,
             &QTcpSocket::deleteLater);
+#if QT_VERSION >= 0x051500
     connect(remote_socket, &QAbstractSocket::errorOccurred, this,
             &HttpProxy::onRemoteSocketError);
+#else
+    connect(remote_socket,
+            SIGNAL(QAbstractSocket::error(QAbstractSocket::SocketError)), this,
+            SLOT(HttpProxy::onRemoteSocketError(QAbstractSocket::SocketError)));
+#endif
     qDebug() << "remote_socket connecting to: " << host << port;
     remote_socket->connectToHost(host, port);
 }
@@ -182,7 +196,7 @@ void HttpProxy::onRemoteReadyRead() {
     QTcpSocket *remote_socket = qobject_cast<QTcpSocket *>(sender());
     QTcpSocket *local_socket =
         qobject_cast<QTcpSocket *>(remote_socket->parent());
-    assert(local_socket != remote_socket);
+    // assert(local_socket != remote_socket);
     QByteArray d = remote_socket->readAll();
     local_socket->write(d);
     //    qDebug() << "wrote data to local:" << d;
