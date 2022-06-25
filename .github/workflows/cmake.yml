@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - v*
+    branches:
+      - main
   release:
     types: [published]
   workflow_dispatch:
@@ -119,7 +121,7 @@ jobs:
           # install botan2
           cd botan-2.17.3/
           sudo make install
-      
+
       # --------------------------------------------------------
       - name: macOS - ${{ matrix.qt_version }} - Build preparation - Install Packages
         if: matrix.platform == 'macos-latest'
@@ -141,7 +143,7 @@ jobs:
         uses: ashutoshvarma/setup-ninja@master
         with:
           # ninja version to download. Default: 1.10.0
-          version: 1.10.0   
+          version: 1.10.0
       # - name: Win-${{ matrix.arch }} - ${{ matrix.qt_version }} - Build preparation - Download Dependencies
       #   shell: bash
       #   if: matrix.platform == 'windows-latest'
